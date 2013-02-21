@@ -1,0 +1,17 @@
+<html>
+	<head>
+		<link rel="stylesheet" href="{{STATIC_URL}}common/css/bootstrap.css" type="text/css" media="screen"/>
+		<link rel="stylesheet" href="{{STATIC_URL}}common/css/bootstrap-responsive.css" type="text/css" media="screen"/>
+	</head>
+	<body>
+		<div style="width: 400px; height: 400px; margin-left: 4cm; margin-top: 4cm">			
+			<form action="/registration/authenticate_user/" method="post">
+				{% csrf_token %}
+				<h2>Please Sign In</h2>
+				<input type="text" class="input-block-level" name="username" id="username1" placeholder="Username"/>
+				<input type="password" class="input-block-level" name="password" id="password1" placeholder="Password" />							
+				<input type="submit" class="btn btn-large btn-primary" value="Sign In" />
+			</form>
+		</div>
+	</body>
+</html>
