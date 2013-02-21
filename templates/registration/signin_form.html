@@ -2,16 +2,23 @@
 	<head>
 		<link rel="stylesheet" href="{{STATIC_URL}}common/css/bootstrap.css" type="text/css" media="screen"/>
 		<link rel="stylesheet" href="{{STATIC_URL}}common/css/bootstrap-responsive.css" type="text/css" media="screen"/>
+		
 	</head>
 	<body>
-		<div style="width: 400px; height: 400px; margin-left: 4cm; margin-top: 4cm">			
+		<div style="width: 400px; height: 400px; margin-left: 4cm; margin-top: 4cm">
+			<div class="alert alert-error" style={% if error_message %}"visiblity:visible"{%else%}"display:none"{% endif %}>
+				<button type="button" class="close" data-dismiss="alert" >&times;</button>
+				{{error_message}}
+			</div>
 			<form action="/registration/authenticate_user/" method="post">
 				{% csrf_token %}
 				<h2>Please Sign In</h2>
 				<input type="text" class="input-block-level" name="username" id="username1" placeholder="Username"/>
-				<input type="password" class="input-block-level" name="password" id="password1" placeholder="Password" />							
+				<input type="password" class="input-block-level" name="password" id="password1" placeholder="Password" />
 				<input type="submit" class="btn btn-large btn-primary" value="Sign In" />
 			</form>
 		</div>
-	</body>
+		<script type="text/javascript" src="{{STATIC_URL}}common/js/jquery.js"></script>
+		<script type="text/javascript" src="{{STATIC_URL}}common/js/bootstrap.js"></script>
+	</body>	
 </html>
