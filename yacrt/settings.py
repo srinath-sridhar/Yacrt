@@ -17,7 +17,6 @@ ADMINS = (
 
 MANAGERS = ADMINS
 
-
 # If running tests use sqlite3 this makes tests run faster
 TEST = 'test' in sys.argv
  
