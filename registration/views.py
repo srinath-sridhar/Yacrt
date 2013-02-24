@@ -20,19 +20,11 @@ def authenticate_user(request):
         if user.is_active:
             login(request, user)
             request.session['name'] = user.get_full_name()
-            return redirect('/registration/home/')
+            return redirect('/repos/home/')
         else:
             return render(request, 'registration/signin_form.html', {'error_message': "User account disabled",})
     else:
         return render(request, 'registration/signin_form.html', {'error_message': "User invalid"})
-
-
-@login_required(login_url='/registration/signin/')
-def login_success(request):
-    print request.session.get('name')
-    name = request.session.get('name')
-    name = strip_tags(name)
-    return HttpResponse("Welcome " + name)
 
 
 

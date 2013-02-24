@@ -6,6 +6,7 @@ from django.contrib import admin
 admin.autodiscover()
 
 from registration import views
+
 urlpatterns = patterns('',
     # Examples:
     # url(r'^$', 'Yacrt.views.home', name='home'),
@@ -17,6 +18,7 @@ urlpatterns = patterns('',
     # Uncomment the next line to enable the admin:
     url(r'^$',views.signin_form),
     url(r'^registration/', include('registration.urls')),
+    url(r'^repos/', include('repobrowser.urls')),
     url(r'^admin/', include(admin.site.urls)),
 )
 

@@ -2,3 +2,4 @@ static
 *.pyc
 *.project
 *.pydevproject
+yacrt/settings.py
