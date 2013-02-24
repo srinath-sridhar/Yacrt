@@ -7,13 +7,36 @@
 		<link rel="stylesheet" href="{{STATIC_URL}}common/css/bootstrap-responsive.css" type="text/css" media="screen"/>
 	</head>
 	<body>
-		
+
 		<div style="margin-left:1000px; margin-top: 30px; font-size: 3">
-			Welcome {{user_name}} <br> <a href="/registration/logout/">Logout</a>
+			Welcome {{user_name}}
+			<br>
+			<a href="/registration/logout/">Logout</a>
 		</div>
 		<div style="width: 1200px; height: 700px; margin-left: 2cm; margin-top: 30px;">
 			<h2>Your Repositories</h2>
+			<table class="table table-bordered table-striped">
+				<thead>
+					<tr>
+						<th>#</th>
+						<th>Repository Name</th>
+						<th>Repository Url</th>
+						<th>Repository Description</th>
+					</tr>
+				</thead>
+				<tbody>
+					{%for repo in repos%}
+					<tr>
+						<td>{{forloop.counter}}</td>
+						<td>{{repo.repo_name}}</td>
+						<td><a href={{repo.repo_url}}>View revision history for {{repo.repo_name}}</a></td>
+						<td>{{repo.repo_description}}</td>
+					</tr>
+					{%endfor%}
+				</tbody>
+			</table>
 		</div>
+
 		<script type="text/javascript" src="{{STATIC_URL}}common/js/jquery.js"></script>
 		<script type="text/javascript" src="{{STATIC_URL}}common/js/bootstrap.js"></script>
 
