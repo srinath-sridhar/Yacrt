@@ -4,4 +4,5 @@ from repobrowser import views
 
 urlpatterns = patterns('', 
                        url(r'^home/$',views.repos_home, name="repos_home"),
+                       url(r'^revisions/$', views.get_repo_revisions, name="repos_revisions")
                        )

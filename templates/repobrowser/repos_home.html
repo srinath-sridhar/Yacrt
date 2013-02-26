@@ -11,7 +11,7 @@
 		<div style="margin-left:1000px; margin-top: 30px; font-size: 3">
 			Welcome {{user_name}}
 			<br>
-			<a href="/registration/logout/">Logout</a>
+			<a href="/registration/signout/">Logout</a>
 		</div>
 		<div style="width: 1200px; height: 700px; margin-left: 2cm; margin-top: 30px;">
 			<h2>Your Repositories</h2>
@@ -29,7 +29,7 @@
 					<tr>
 						<td>{{forloop.counter}}</td>
 						<td>{{repo.repo_name}}</td>
-						<td><a href={{repo.repo_url}}>View revision history for {{repo.repo_name}}</a></td>
+						<td><a href='/repos/revisions/?repo_url={{repo.repo_url}}'>View revision history for {{repo.repo_name}}</a></td>
 						<td>{{repo.repo_description}}</td>
 					</tr>
 					{%endfor%}

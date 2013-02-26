@@ -10,6 +10,10 @@
 				<button type="button" class="close" data-dismiss="alert" >&times;</button>
 				{{error_message}}
 			</div>
+			<div class="alert alert-success" style={% if success_message %}"visiblity:visible"{%else%}"display:none"{% endif %}>
+				<button type="button" class="close" data-dismiss="alert" >&times;</button>
+				{{success_message}}
+			</div>
 			<form action="/registration/authenticate_user/" method="post">
 				{% csrf_token %}
 				<h2>Please Sign In</h2>

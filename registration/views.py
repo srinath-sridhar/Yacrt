@@ -1,7 +1,7 @@
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.template import RequestContext
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.core.urlresolvers import reverse
 from django.shortcuts import redirect, render
 from django.utils.html import strip_tags
@@ -26,5 +26,12 @@ def authenticate_user(request):
     else:
         return render(request, 'registration/signin_form.html', {'error_message': "User invalid"})
 
-
+# Log out function. Uses django auth model to clear session
+def signout(request):
+    if request.user is None:
+        return render(request, 'registration/signin_form.html', {'success_message': "User successfully logged out",})
+    else:
+        logout(request)
+        return render(request, 'registration/signin_form.html', {'success_message': "User successfully logged out",})
+        
 
