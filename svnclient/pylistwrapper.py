@@ -1,6 +1,7 @@
 import os
 import sys
 
+# This class wraps the List object returned by svn list function
 class PylistWrapper:
 
     def setAbsolutePath(self, listObject, root_url):

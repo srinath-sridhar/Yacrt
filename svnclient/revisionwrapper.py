@@ -33,7 +33,7 @@ class Changes:
     def get_absolute_path(self):
         return self.absolute_path
             
-
+# This class wraps the Log object returned by the svn log function
 class Pysvrev:
     def __init__(self, logObject, repo_url):
         self.author = logObject['author']
