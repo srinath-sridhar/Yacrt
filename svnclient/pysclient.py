@@ -1,7 +1,9 @@
 import os
 import sys
 import pysvn
-
+from revisionwrapper import Pysvrev
+from pylistwrapper import PylistWrapper
+import svncommands
 
 class Pysclient:
     
@@ -14,65 +16,65 @@ class Pysclient:
     
     def get_client(self):
         return self.client
-    
+
     def get_file_list(self):
         file_list = []
-        for i in self.client.list(self.url, recurse=True):
+        for i in svncommands.list(self.client, self.url):
                 l = PylistWrapper(i, self.url)
                 file_list.append(l)
-                ## Log purposes only
-#                print l.get_revision()
-#                print l.get_time_last_change()
-#                print l.get_kind()
-#                print l.get_absolute_path()
-#                print l.get_relative_path()
-#                if l.get_kind() == pysvn.node_kind.file:
-#                    print self.get_file_content(l.get_absolute_path())
-#                print '-------------------'
+                # Log purposes only
+#                logRepoFileListHeadVersion(self , l)
         return file_list
                 
-    def get_file_content(self, url):
-        return self.client.cat(url)
-
-# End class
-
-class PylistWrapper:
-
-    def setAbsolutePath(self, listObject, root_url):
-        if root_url[len(root_url) - 1] == '/':
-            self.absolute_path = root_url + listObject[0]['repos_path'][2:]
-        else:
-            self.absolute_path = root_url + listObject[0]['repos_path'][1:]
-
-    def __init__(self, listObject, root_url):
-        self.revision = listObject[0]['created_rev']
-        self.setAbsolutePath(listObject, root_url)
-        self.relative_path = listObject[0]['repos_path'][1:]
-        self.kind = listObject[0]['kind']
-        self.size = listObject[0]['size']
-        self.last_author = listObject[0]['last_author']
-        self.has_props = listObject[0]['has_props']
-        self.timeOfLastChange = listObject[0]['time']
-        
-    def get_revision(self):
-        return self.revision
-    def get_absolute_path(self):
-        return self.absolute_path
-    def get_relative_path(self):
-        return self.relative_path
-    def get_kind(self):
-        return self.kind
-    def get_size(self):
-        return self.size
-    def get_last_author(self):
-        return self.last_author
-    def get_time_last_change(self):
-        return self.timeOfLastChange
+    def get_file_content_current_change(self, url):
+        return self.client.cat(url).split('\n')
     
+    def get_file_content_previous_change(self, url):
+        headrev = self.client.info2(url)[0][1]['last_changed_rev'].number-1
+        if headrev >= 1:
+            return self.client.cat(url, revision=pysvn.Revision(pysvn.opt_revision_kind.number, headrev)).split('\n')
+        else:
+            return ''
+
+    def get_revisions(self):
+        revision_list = []
+        for i in svncommands.log(self.client, self.url):
+            revision_list.append(Pysvrev(i, self.url))
+            # Log purposes only
+            logRevisionListForARepo(Pysvrev(i, self.url))
+        return revision_list
+
 # End class
+
+# logging classes
+
+def logRepoFileListHeadVersion(client, l):
+    print l.get_revision()
+    print l.get_time_last_change()
+    print l.get_kind()
+    print l.get_absolute_path()
+    print l.get_relative_path()
+    if l.get_kind() == pysvn.node_kind.file:
+        print client.get_file_content(l.get_absolute_path())
+    print '-------------------'
+
+def logRevisionListForARepo(l):
+    print "Revision: " + str(l.get_revision_number())
+    print l.get_author()
+    print l.get_date()
+    print l.get_message()
+    for i in l.get_changes():
+        print i.get_action_on_file() + " " + i.get_relative_path() + " @ " + i.get_absolute_path()
+    print '-------------------'
+
+# main calling methods
 
 c = Pysclient('svn://192.168.2.21/home/ameya/TestRepo/')
 print c.get_file_list()
+print c.get_file_content_current_change('svn://192.168.2.21/home/ameya/TestRepo/src/sorting/InsertionSort.java')
+print c.get_file_content_previous_change('svn://192.168.2.21/home/ameya/TestRepo/src/sorting/InsertionSort.java')
+print c.get_client().info2(c.get_url(), recurse=False)[0][1].get('last_changed_rev')
+print c.get_revisions()
     
     
     

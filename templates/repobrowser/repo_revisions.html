@@ -29,10 +29,11 @@
 				<tbody>
 					{%for revision in repo_revisions%}
 					<tr>					
-						<td>{{revision.revision.number}}</td>
-						<td>{{revision.author}}</td>
-						<td>{{revision.message}}</td>
-						<td>{{revision.date}}</td>
+						<td>{{revision.get_revision_number()}}</td>
+						<td>{{revision.get_author()}}</td>
+						<td>{{revision.get_messaege()}}</td>
+						<td>{{revision.get_date()}}</td>
+						<td><a href="#">Browse Files</a></td> <!-- Should use the change object here.-->
 					</tr>
 					{%endfor%}
 				</tbody>
