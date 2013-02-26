@@ -32,7 +32,10 @@ def get_user_name(request):
 def get_repo_revisions(request):
     user_name = get_user_name(request)
     repo_abs_url = request.GET['repo_url']
+    repo_name = request.GET['repo_name']
     client = Pysclient(repo_abs_url)
     repo_revisions = client.get_revisions()
     return render(request, "repobrowser/repo_revisions.html",
-                   {'user_name':user_name, 'repo_revisions':repo_revisions})
+                   {'user_name':user_name, 
+                    'repo_revisions':repo_revisions,
+                    'repo_name' : repo_name})
