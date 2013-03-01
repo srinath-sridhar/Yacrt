@@ -1,0 +1,22 @@
+td.red
+{
+	background-color: red;
+	
+}
+
+td.green
+{
+	background-color: green;
+}
+
+table 
+{
+	background-color: #2e3436;
+}
+
+pre
+{
+	font-family: Consolas, Menlo, Monaco, Lucida Console, Liberation Mono, DejaVu Sans Mono, Bitstream Vera Sans Mono, Courier New, monospace, serif;
+	font-size: 12;
+	color: white;
+}

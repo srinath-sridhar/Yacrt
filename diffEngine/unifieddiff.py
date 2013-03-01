@@ -31,7 +31,7 @@ def closeHTML():
     output.append("</html>")
 
 def addCSS():
-    output.append("<head><link rel='stylesheet' type='text/css' href='compare.css'></head>")
+    output.append("<head><link rel='stylesheet' type='text/css' href='unifieddiff_style.css'></head>")
 
 def writeDeletedLine(str):
     print 'line'
