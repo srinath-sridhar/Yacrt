@@ -98,7 +98,7 @@ def get_all_changed_paths(url, rev_number=None):
 """
 def get_unified_html_diff(repo_url, file_path, rev_number = None):
     client = __create_client(repo_url)
-    return getUnifiedDiff(client.get_file_content_previous_change(file_path, rev_number), client.get_file_content_current_change(file_path))
+    return getUnifiedDiff(client.get_file_content_previous_change(file_path, rev_number), client.get_file_content_current_change(file_path, rev_number))
 
 """
  Gets the side by side diff of a file with its immediately previous version.
@@ -158,6 +158,6 @@ for i in l:
 
 f = open('UnifiedDiffTest.html', 'w')
 f.write("<html>")
-f.writelines(get_unified_html_diff(repoURL, 'svn://192.168.2.21/home/ameya/TestRepo/src/sorting/InsertionSort.java'))
+f.writelines(get_unified_html_diff(repoURL, 'svn://192.168.2.21/home/ameya/TestRepo/src/sorting/InsertionSort.java', 5))
 f.write("</html>")
 

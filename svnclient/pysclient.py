@@ -28,14 +28,16 @@ class Pysclient:
     def get_head_revision_number(self):
         return self.client.info2(self.url)[0][1]['rev'].number
 
-    def get_file_content_current_change(self, absoluteUrl):
-        return self.client.cat(absoluteUrl).split('\n')
+    def get_file_content_current_change(self, absoluteUrl, rev_number = None):
+        if rev_number == None:
+            rev_number = self.get_head_revision_number()
+        return self.client.cat(absoluteUrl, revision=pysvn.Revision(pysvn.opt_revision_kind.number, rev_number)).split('\n')
     
     def get_file_content_previous_change(self, absoluteUrl, revision = None):
         if revision == None:
-            headrev = self.client.info2(absoluteUrl)[0][1]['last_changed_rev'].number-1
+            headrev = self.get_head_revision_number() - 1
         else:
-            headrev = revision
+            headrev = revision - 1
 
         if headrev >= 1:
             return self.client.cat(absoluteUrl, revision=pysvn.Revision(pysvn.opt_revision_kind.number, headrev)).split('\n')
