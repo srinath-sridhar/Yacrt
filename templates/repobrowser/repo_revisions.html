@@ -13,8 +13,8 @@
 			<br>
 			<a href="/registration/signout/">Logout</a>
 		</div>
-		<div style="width: 1200px; height: 700px; margin-left: 2cm; margin-top: 30px;">
-			<h2>Revisions for add repo name here</h2>
+		<div style="width: 1400px; height: 700px; margin-left: 2cm; margin-top: 30px;">
+			<h2>Revisions for {{repo_name}}</h2>
 			<table class="table table-bordered table-striped">
 				
 				<thead>					
@@ -29,11 +29,23 @@
 				<tbody>
 					{%for revision in repo_revisions%}
 					<tr>					
-						<td>{{revision.get_revision_number()}}</td>
-						<td>{{revision.get_author()}}</td>
-						<td>{{revision.get_messaege()}}</td>
-						<td>{{revision.get_date()}}</td>
-						<td><a href="#">Browse Files</a></td> <!-- Should use the change object here.-->
+						<td>{{revision.get_revision_number}}</td>
+						<td>{{revision.get_author}}</td>
+						<td>{{revision.get_message}}</td>
+						<td>{{revision.get_date}}</td>
+						<td>
+							<a href="javascript:void(0);" id= "rev-{{revision.get_revision_number}}-files-show-btn" 
+								onclick=expand_files_view("rev-{{revision.get_revision_number}}-files")>
+								Browse Files
+							</a>
+						</td>
+					</tr>
+					<tr id="rev-{{revision.get_revision_number}}-files" style="display:none">
+						<td colspan="5">
+							{%for file in revision.get_changes%}
+							<b>{{file.get_action_on_file}}</b> &nbsp;&nbsp; {{file.get_relative_path}} <br>
+							{%endfor%}
+						</td>
 					</tr>
 					{%endfor%}
 				</tbody>
@@ -42,6 +54,19 @@
 
 		<script type="text/javascript" src="{{STATIC_URL}}common/js/jquery.js"></script>
 		<script type="text/javascript" src="{{STATIC_URL}}common/js/bootstrap.js"></script>
+		<script type="text/javascript">
+			function expand_files_view(elem_tag) {
+				if ($.trim($('#'+elem_tag+'-show-btn').html()) == "Browse Files") {
+					$('#'+elem_tag+'-show-btn').html("Close");
+				}
+				else {
+					console.log("is close")
+					$('#'+elem_tag+'-show-btn').html("Browse Files");	
+				}
+				$('#'+elem_tag).toggle();
+				return false;
+			}
+		</script>
 
 	</body>
 </html>
