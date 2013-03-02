@@ -24,12 +24,6 @@ def createHTMLViewFromUnifiedDiff(diff):
         else:
             writeLine(i[1:])
 
-def openHTML():
-    output.append("<html>")
-    
-def closeHTML():
-    output.append("</html>")
-
 def addCSS():
     output.append("<head><link rel='stylesheet' type='text/css' href='unifieddiff_style.css'></head>")
 
@@ -50,6 +44,14 @@ def openTable():
 
 def closeTable():
     output.append("</table>")
+
+def getUnifiedDiff(fileContentBefore, fileContentAfter):
+    addCSS();
+    openTable();
+    createHTMLViewFromUnifiedDiff(difflib.Differ().compare(fileContentBefore, fileContentAfter));
+    closeTable();
+    return output
+
 
 # Testing commands - Do not uncomment.
 
