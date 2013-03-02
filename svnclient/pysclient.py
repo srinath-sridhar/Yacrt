@@ -25,6 +25,9 @@ class Pysclient:
 #                logRepoFileListHeadVersion(self , l)
         return file_list
                 
+    def get_head_revision_number(self):
+        return self.client.info2(self.url)[0][1]['rev'].number
+
     def get_file_content_current_change(self, absoluteUrl):
         return self.client.cat(absoluteUrl).split('\n')
     
@@ -41,10 +44,22 @@ class Pysclient:
 
     def get_revisions(self, startRevision, endRevision, discover_changed_paths):
         revision_list = []
-        for i in self.client.log(self.url, startRevision, endRevision, discover_changed_paths):
+
+        if (startRevision == None and endRevision == None):
+            startRev = pysvn.Revision(pysvn.opt_revision_kind.head)
+            endRev = pysvn.Revision(pysvn.opt_revision_kind.number, 0)
+        elif (startRevision != None and endRevision == None):
+            startRev = pysvn.Revision(pysvn.opt_revision_kind.number, startRevision)
+            endRev = pysvn.Revision(pysvn.opt_revision_kind.number, 0)
+        else:
+            startRev = pysvn.Revision(pysvn.opt_revision_kind.number, startRevision)
+            endRev = pysvn.Revision(pysvn.opt_revision_kind.number, endRevision)
+
+
+        for i in self.client.log(self.url, startRev, endRev, discover_changed_paths):
             revision_list.append(Pysvrev(i, self.url))
             # Log purposes only
-            logRevisionListForARepo(Pysvrev(i, self.url))
+            # logRevisionListForARepo(Pysvrev(i, self.url))
         return revision_list
 
 # End class

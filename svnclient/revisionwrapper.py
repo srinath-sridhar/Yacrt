@@ -25,6 +25,8 @@ class Changes:
         self.action = svnstatus.get(change['action'])
         self.relative_path = change['path']
         self.absolute_path = setAbsolutePath(repo_url, change['path'])
+        self.copyfrom_path = change['copyfrom_path']
+        self.copyfrom_revision = change['copyfrom_revision']
         
     def get_relative_path(self):
         return self.relative_path
@@ -32,6 +34,10 @@ class Changes:
         return self.action
     def get_absolute_path(self):
         return self.absolute_path
+    def get_copyfrompath(self):
+        return self.copyfrom_path
+    def get_copyfromrevision(self):
+        return self.copyfrom_revision.number
             
 # This class wraps the Log object returned by the svn log function
 class Pysvrev:

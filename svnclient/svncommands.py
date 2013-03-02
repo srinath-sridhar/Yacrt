@@ -14,11 +14,20 @@ import pysvn
 def __create_client(url, vc_type=None):
     return Pysclient(url)
 
+
 """
+    Return the HEAD version number
+"""
+def get_head_version_number(url):
+    c = __create_client(url)
+    return str(c.get_head_revision_number())
+
+"""
+ @ UNUSED
+
  Get all revisions for a given url and optionally all changed paths
  required for current working of my code. Should be replaced by 
  get_revision_details function
- IGNORE THIS.
 
  Output - Specify name of wrapper class
 """
@@ -30,30 +39,24 @@ def get_all_revision_details(url, discover_changes = False):
  Gets details of all revisions for a given repository in a range
     Options
         start_rev , end_rev - starting and ending revisions
-            if both start and end are specified retireves [start, end]
-            only start is specified retrieves [start, 0] 
-            only end is specified retirieves [HEAD, end]
-            neither start or end specified retrieves [HEAD, 0]
         discover_changes - optionally retrieve changed file paths
 
     Reference
+        [] - All revisions
         [start, end] - between start and end, both included
-        [start, 0] - from and including start to the oldest revison
-        [HEAD, end] - from the latest revision upto and including end
-        [HEAD, 0] - all revisons for the given repository
+        [start] - from and including start to the oldest revison
 
-    Returns List of Revisons wrapped as Pysrev
+    Returns List of Pysrev instances
 """                           
-def get_revision_details(url, start_rev=pysvn.Revision(pysvn.opt_revision_kind.head), end_rev=pysvn.Revision(pysvn.opt_revision_kind.number, 0), discover_changes=False):
+def get_revision_details(url, start_rev=None, end_rev=None, discover_changes=False):
     client = __create_client(url)
     return client.get_revisions(start_rev, end_rev, discover_changes)
 
 """
- I dont think this is really required unless we want to implement 
- browsing the repository (like a directory structure) over the web
+    Could be needed for further work
 """
 def list(client, url):
-    client = create_client(url)
+    client = __create_client(url)
     return client.list(url, recurse=True)
 
 """
@@ -61,14 +64,12 @@ def list(client, url):
  repository location.
  url - base path of the remote repository
  rev_number - revision number of repository
-              if no revision number is specified 
-              retireve changed paths of HEAD revision
  
- Output - Specify name of wrapper class
+ Returns - One Pysrev instance - Use get_changes() to get all changed paths.
 """
 def get_all_changed_paths(url, rev_number=None):
-    client = create_client(url)
-    return client.get_changed_paths(rev_number)
+    client = __create_client(url)
+    return client.get_revisions(rev_number, rev_number, True)[0]
 
 """
  Gets the unified diff of a file with its immediately previous version.
@@ -83,7 +84,7 @@ def get_all_changed_paths(url, rev_number=None):
  NOTE:  file_path and url may have an overlap. Make sure the overlap
         is resolved to get the url specific to the file
 
- Output - Array of html formatted lines that can be used as such
+ Returns - Array of html formatted lines that can be used as such
 """
 def get_unified_html_diff(repo_url, file_path, rev_number = None):
     client = __create_client(repo_url)
@@ -111,16 +112,42 @@ def get_side_by_side_html_diff(url, rev_number, file_path):
 
 
 
-print get_revision_details('svn://192.168.2.21/home/ameya/TestRepo/')
+
+
+
+
+
+"""
+
+Tests and Examples
+
+"""
+repoURL = 'svn://192.168.2.21/home/ameya/TestRepo/'
+print "HEAD Revison Number for Repo: " + get_head_version_number(repoURL)
+
+
+print "\nTest 1: Getting all revisions from Head to End\n-----------------------------------\n"
+print get_revision_details(repoURL)
+
+print "\nTest 2: Getting all revisions from A to B\n-----------------------------------\n"
+print get_revision_details(repoURL,4,3)
+
+print "\nTest 3: Getting all revisions from A to End\n-----------------------------------\n"
+print get_revision_details(repoURL,2)
+
+print "\nTest 4: Getting all Changed paths for No Revison\n-----------------------------------\n"
+l = get_all_changed_paths(repoURL)
+for i in l.get_changes():
+    print i.get_action_on_file() + " " + i.get_relative_path() + " @ " + i.get_absolute_path()
+
+print "\nTest 5: Getting all Changed paths for A Revison\n-----------------------------------\n"
+l = get_all_changed_paths(repoURL, 1)
+for i in l.get_changes():
+    print i.get_action_on_file() + " " + i.get_relative_path() + " @ " + i.get_absolute_path()
+
+
 f = open('UnifiedDiffTest.html', 'w')
 f.write("<html>")
-f.writelines(get_unified_html_diff('svn://192.168.2.21/home/ameya/TestRepo/', 'svn://192.168.2.21/home/ameya/TestRepo/src/sorting/InsertionSort.java'))
+f.writelines(get_unified_html_diff(repoURL, 'svn://192.168.2.21/home/ameya/TestRepo/src/sorting/InsertionSort.java'))
 f.write("</html>")
-# main calling methods
 
-
-# print c.get_file_list()
-# print c.get_file_content_current_change('svn://192.168.2.21/home/ameya/TestRepo/src/sorting/InsertionSort.java')
-# print c.get_file_content_previous_change('svn://192.168.2.21/home/ameya/TestRepo/src/sorting/InsertionSort.java')
-# print c.get_client().info2(c.get_url(), recurse=False)[0][1].get('last_changed_rev')
-# print c.get_revisions()
