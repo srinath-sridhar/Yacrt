@@ -53,9 +53,10 @@ class Pysvrev:
         return self.revision_number
     def get_changes(self):
         wrapped_changes = []
-        for i in self.changes:
-            wrapped_changes.append(Changes(i, self.repo_url))
-        return wrapped_changes
+        if self.changes != None:
+            for i in self.changes:
+                wrapped_changes.append(Changes(i, self.repo_url))
+            return wrapped_changes
     
     
     

@@ -3,7 +3,6 @@ import sys
 import pysvn
 from revisionwrapper import Pysvrev
 from pylistwrapper import PylistWrapper
-import svncommands
 
 class Pysclient:
     
@@ -26,19 +25,23 @@ class Pysclient:
 #                logRepoFileListHeadVersion(self , l)
         return file_list
                 
-    def get_file_content_current_change(self, url):
-        return self.client.cat(url).split('\n')
+    def get_file_content_current_change(self, absoluteUrl):
+        return self.client.cat(absoluteUrl).split('\n')
     
-    def get_file_content_previous_change(self, url):
-        headrev = self.client.info2(url)[0][1]['last_changed_rev'].number-1
+    def get_file_content_previous_change(self, absoluteUrl, revision = None):
+        if revision == None:
+            headrev = self.client.info2(absoluteUrl)[0][1]['last_changed_rev'].number-1
+        else:
+            headrev = revision
+
         if headrev >= 1:
-            return self.client.cat(url, revision=pysvn.Revision(pysvn.opt_revision_kind.number, headrev)).split('\n')
+            return self.client.cat(absoluteUrl, revision=pysvn.Revision(pysvn.opt_revision_kind.number, headrev)).split('\n')
         else:
             return ''
 
-    def get_revisions(self):
+    def get_revisions(self, startRevision, endRevision, discover_changed_paths):
         revision_list = []
-        for i in svncommands.log(self.client, self.url):
+        for i in self.client.log(self.url, startRevision, endRevision, discover_changed_paths):
             revision_list.append(Pysvrev(i, self.url))
             # Log purposes only
             logRevisionListForARepo(Pysvrev(i, self.url))
@@ -67,14 +70,7 @@ def logRevisionListForARepo(l):
         print i.get_action_on_file() + " " + i.get_relative_path() + " @ " + i.get_absolute_path()
     print '-------------------'
 
-# main calling methods
 
-c = Pysclient('svn://192.168.2.21/home/ameya/TestRepo/')
-print c.get_file_list()
-print c.get_file_content_current_change('svn://192.168.2.21/home/ameya/TestRepo/src/sorting/InsertionSort.java')
-print c.get_file_content_previous_change('svn://192.168.2.21/home/ameya/TestRepo/src/sorting/InsertionSort.java')
-print c.get_client().info2(c.get_url(), recurse=False)[0][1].get('last_changed_rev')
-print c.get_revisions()
     
     
     

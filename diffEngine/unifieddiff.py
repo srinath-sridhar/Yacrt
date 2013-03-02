@@ -3,53 +3,50 @@ import sys
 import os
 import difflib
 import re
-import pysclient
+
 output = []
-def htmlFormatString(str):
+def __htmlFormatString(str):
     return str.replace('<', '&lt;').replace('>', '&gt;')
 
-def createHTMLViewFromUnifiedDiff(diff):
+def __createHTMLViewFromUnifiedDiff(diff):
     boundaryRecord = None
     startsWithPlus = re.compile(r"^\+.*")
     startsWithMinus = re.compile(r"^\-.*")
     startsWithQuestion = re.compile(r"^\?.*")
     for i in diff:
         if re.search(startsWithPlus, i) != None:
-            writeAddedLine(i[1:])
+            __writeAddedLine(i[1:])
         elif re.search(startsWithMinus, i) != None:
-            writeDeletedLine(i[1:])
+            __writeDeletedLine(i[1:])
         elif re.search(startsWithQuestion, i) != None:
             # Do nothing for now.
             continue
         else:
-            writeLine(i[1:])
+            __writeLine(i[1:])
 
-def addCSS():
-    output.append("<head><link rel='stylesheet' type='text/css' href='unifieddiff_style.css'></head>")
+def __addCSS():
+    output.append("<head><link rel='stylesheet' type='text/css' href='../diffEngine/unifieddiff_style.css'></head>")
 
-def writeDeletedLine(str):
-    print 'line'
-    output.append("<tr><td class='red'><pre>" + htmlFormatString(str) + "</pre></td></tr>")
+def __writeDeletedLine(str):
+    output.append("<tr><td class='red'><pre>" + __htmlFormatString(str) + "</pre></td></tr>")
 
-def writeAddedLine(str):
-    print 'line'
-    output.append("<tr><td class='green'><pre>" + htmlFormatString(str) + "</pre></td></tr>")
+def __writeAddedLine(str):
+    output.append("<tr><td class='green'><pre>" + __htmlFormatString(str) + "</pre></td></tr>")
     
-def writeLine(str):
-    print 'line'
-    output.append("<tr><td><pre>" + htmlFormatString(str) + "</pre></td></tr>")
+def __writeLine(str):
+    output.append("<tr><td><pre>" + __htmlFormatString(str) + "</pre></td></tr>")
 
-def openTable():
+def __openTable():
     output.append("<table>")
 
-def closeTable():
+def __closeTable():
     output.append("</table>")
 
 def getUnifiedDiff(fileContentBefore, fileContentAfter):
-    addCSS();
-    openTable();
-    createHTMLViewFromUnifiedDiff(difflib.Differ().compare(fileContentBefore, fileContentAfter));
-    closeTable();
+    __addCSS();
+    __openTable();
+    __createHTMLViewFromUnifiedDiff(difflib.Differ().compare(fileContentBefore, fileContentAfter));
+    __closeTable();
     return output
 
 
