@@ -65,11 +65,21 @@ def list(client, url):
  url - base path of the remote repository
  rev_number - revision number of repository
  
- Returns - One Pysrev instance - Use get_changes() to get all changed paths.
+ Returns - One Change instance 
 """
+
+def __repoHasChanges(changed_paths):
+    return len(changed_paths) > 0
+
 def get_all_changed_paths(url, rev_number=None):
     client = __create_client(url)
-    return client.get_revisions(rev_number, rev_number, True)[0]
+    if rev_number == None:
+        rev_number = get_head_version_number(url)
+    changed_paths = client.get_revisions(rev_number, rev_number, True)
+    if(__repoHasChanges(changed_paths)):
+        return changed_paths[0].get_changes()
+    else:
+        return None
 
 """
  Gets the unified diff of a file with its immediately previous version.
@@ -137,12 +147,12 @@ print get_revision_details(repoURL,2)
 
 print "\nTest 4: Getting all Changed paths for No Revison\n-----------------------------------\n"
 l = get_all_changed_paths(repoURL)
-for i in l.get_changes():
+for i in l:
     print i.get_action_on_file() + " " + i.get_relative_path() + " @ " + i.get_absolute_path()
 
 print "\nTest 5: Getting all Changed paths for A Revison\n-----------------------------------\n"
 l = get_all_changed_paths(repoURL, 1)
-for i in l.get_changes():
+for i in l:
     print i.get_action_on_file() + " " + i.get_relative_path() + " @ " + i.get_absolute_path()
 
 
