@@ -1,0 +1,16 @@
+.unchanged-line {
+    background-color:#fcf8e3;
+}
+
+.removed-line {
+    background-color:#f2dede;
+}
+
+.added-line {
+    background-color:rgb(221, 255, 221);
+}
+
+.diff-table {
+    font-family:Consolas,"Liberation Mono", Courier, monospace; 
+    font-size:12px;
+}

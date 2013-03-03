@@ -29,7 +29,8 @@
 					<tr>
 						<td>{{forloop.counter}}</td>
 						<td>{{repo.repo_name}}</td>
-						<td><a href='/repos/revisions/?repo_url={{repo.repo_url}}'>View revision history for {{repo.repo_name}}</a></td>
+						<td><a href='/repos/revisions/?repo_url={{repo.repo_url}}&repo_name={{repo.repo_name}}'>
+							View revision history for {{repo.repo_name}}</a></td>
 						<td>{{repo.repo_description}}</td>
 					</tr>
 					{%endfor%}

@@ -13,10 +13,13 @@
 			<br>
 			<a href="/registration/signout/">Logout</a>
 		</div>
-		<div style="width: 1400px; height: 700px; margin-left: 2cm; margin-top: 30px;">
+		<div style="width: 1200px; height: 700px; margin-left: 2cm; margin-top: 30px;">
 			<h2>Revisions for {{repo_name}}</h2>
 			<table class="table table-bordered table-striped">
-				
+				<colgroup width="8%"/>
+				<colgroup width="12%"/>
+				<colgroup width="60%"/>
+				<colgroup width="20%"/>
 				<thead>					
 					<tr>
 						<th>Revision #</th>
@@ -31,21 +34,12 @@
 					<tr>					
 						<td>{{revision.get_revision_number}}</td>
 						<td>{{revision.get_author}}</td>
-						<td>{{revision.get_message}}</td>
-						<td>{{revision.get_date}}</td>
 						<td>
-							<a href="javascript:void(0);" id= "rev-{{revision.get_revision_number}}-files-show-btn" 
-								onclick=expand_files_view("rev-{{revision.get_revision_number}}-files")>
-								Browse Files
+							<a href="/repos/revisions/changes/?repo_url={{repo_url}}&repo_name={{repo_name}}&rev_number={{revision.get_revision_number}}">
+							{{revision.get_message}}
 							</a>
 						</td>
-					</tr>
-					<tr id="rev-{{revision.get_revision_number}}-files" style="display:none">
-						<td colspan="5">
-							{%for file in revision.get_changes%}
-							<b>{{file.get_action_on_file}}</b> &nbsp;&nbsp; {{file.get_relative_path}} <br>
-							{%endfor%}
-						</td>
+						<td>{{revision.get_date}}</td>
 					</tr>
 					{%endfor%}
 				</tbody>
