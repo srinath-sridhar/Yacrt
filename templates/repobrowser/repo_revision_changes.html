@@ -6,25 +6,23 @@
     </head>
     <body>
 
-        <div style="margin-left:1000px; margin-top: 30px; font-size: 3">
+        <div style="margin-left:1000px; margin-top: 30px; font-size: 14px">
             Welcome {{user_name}}
             <br>
             <a href="/registration/signout/">Logout</a>
         </div>
         <div style="width: 1800px; height: 700px; margin-left: 2cm; margin-top: 30px;">
             <h2>Changes for revision {{rev_number}} of {{repo_name}}</h2>
-                    {%for path in changed_paths%}
+                    {%for p in changed_paths%}
                         <br>
-                        <b class="{{path.change.get_action_on_file}}">{{path.change.get_action_on_file}}</b>
-                        <b>&nbsp;&nbsp;{{path.change.get_relative_path}}</b> &nbsp;&nbsp;
-                           <a href="javascript:void(0);" onclick=expand_view(this,"diff-view-{{forloop.counter}}")>
+                        <b class="{{p.change.get_action_on_file}}">{{p.change.get_action_on_file}}</b>
+                        <b>&nbsp;&nbsp;{{p.change.get_relative_path}}</b> &nbsp;&nbsp;
+                           <!-- <a href="javascript:void(0);" onclick=expand_view(this,"diff-view-{{forloop.counter}}")>
                                 <i class="icon-minus"></i>
-                           </a>
+                           </a> -->
                            <br>
-                        <div id="diff-view-{{forloop.counter}}">
-                           {%for line in path.diff%}
-                                {%autoescape off%} {{line}} {% endautoescape%}
-                           {%endfor%} 
+                        <div>                        	
+                        	{%autoescape off%} {{p.diff}} {% endautoescape%} 
                         </div>
                     {%endfor%}
         </div>

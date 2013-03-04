@@ -59,18 +59,18 @@ def get_revision_changes(request):
     repo_rev_number = request.GET['rev_number']
     repo_name = request.GET['repo_name']
     changes = svncommands.get_all_changed_paths(repo_abs_url, repo_rev_number)
-    changed_paths = []
-    
+    changed_paths = []     
           
     for path in changes:
         changed_path = {} 
         changed_path['change'] = path
         if path.get_action_on_file() is "Modified":
-            changed_path['diff'] = svncommands.get_unified_html_diff(repo_abs_url, path.get_relative_path(), int(repo_rev_number))
+            changed_path['diff'] = "\n".join(svncommands.get_unified_html_diff(repo_abs_url, path.get_absolute_path(), int(repo_rev_number)))
         else:
-            changed_path['diff'] = []
+            changed_path['diff'] = ""
         changed_paths.append(changed_path)
-
+    for path in changed_paths:
+        print path['diff']
     return render(request, "repobrowser/repo_revision_changes.html",
                 {'user_name':user_name,
                 'repo_name':repo_name,
