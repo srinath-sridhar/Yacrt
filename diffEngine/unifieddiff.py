@@ -14,40 +14,72 @@ def __createHTMLViewFromUnifiedDiff(output,diff):
     boundaryRecord = None
     startsWithPlus = re.compile(r"^\+.*")
     startsWithMinus = re.compile(r"^\-.*")
-    startsWithQuestion = re.compile(r"^\@`.*")
+    line_range_pattern = re.compile(r"^\@.*")
+    from_file_pattern = re.compile(r"^\-\-.*")
+    to_file_pattern = re.compile(r"^\+\+.*")
+
     for i in diff:
-        if re.search(startsWithPlus, i) != None:
+
+        if re.search(from_file_pattern, i) != None:
+            __writeFormattedLine(output, i[1:])
+        elif re.search(to_file_pattern, i) !=None:
+            __writeFormattedLine(output, i[1:])
+        elif re.search(line_range_pattern, i) != None:
+            __reset_line_numbers(i)
+            __writeFormattedLine(output, i[1:])
+        elif re.search(startsWithPlus, i) != None:
             __writeAddedLine(output, i[1:])
         elif re.search(startsWithMinus, i) != None:
             __writeDeletedLine(output, i[1:])
-        elif re.search(startsWithQuestion, i) != None:
-            # Do nothing for now.
-            continue
         else:
             __writeLine(output, i[1:])
+
+def __reset_line_numbers(i):
+    global old_file_line_num
+    global new_file_line_num
+
+    m = re.findall('\d+', i)
+    #defensive copying
+    o = old_file_line_num
+    n = new_file_line_num
+
+    try:
+        temp = int(m[0])
+        old_file_line_num = temp
+        temp = int(m[2])
+        new_file_line_num = temp
+    except:
+        print "exception in __reset_line_num    bers"
+        old_file_line_num = o
+        new_file_line_num = n
+
+    print "reset line numbers"
 
 def __addCSS(output):
     output.append("<head><link rel='stylesheet' type='text/css' href='../diffEngine/unifieddiff_style.css'></head>")
 
+def __writeFormattedLine(output, line):
+    output.append("<tr><td class='line-number'></td><td class='line-number'></td><td><pre class='diff-table-pre unchanged-line'>" + __htmlFormatString(line) + "</pre></td></tr>")
+
 def __writeDeletedLine(output, line):
     global old_file_line_num
-    output.append("<tr><td>"+str(old_file_line_num)+"</td><td></td><td><pre class='diff-table-pre removed-line'>" + __htmlFormatString(line) + "</pre></td></tr>")
+    output.append("<tr><td class='line-number'>"+str(old_file_line_num)+"</td><td class='line-number'></td><td><pre class='diff-table-pre removed-line'>" + __htmlFormatString(line) + "</pre></td></tr>")
     old_file_line_num += 1
 
 def __writeAddedLine(output, line):
     global new_file_line_num
-    output.append("<tr><td></td><td>"+str(new_file_line_num)+"</td><td><pre class=' diff-table-pre added-line'>" + __htmlFormatString(line) + "</pre></td></tr>")
+    output.append("<tr><td class='line-number'></td><td class='line-number'>"+str(new_file_line_num)+"</td><td><pre class=' diff-table-pre added-line'>" + __htmlFormatString(line) + "</pre></td></tr>")
     new_file_line_num +=1
     
 def __writeLine(output, line):
     global old_file_line_num
     global new_file_line_num
-    output.append("<tr><td>"+str(old_file_line_num)+"</td><td>"+str(new_file_line_num)+"</td><td><pre class='diff-table-pre unchanged-line'>" + __htmlFormatString(line) + "</pre></td></tr>")
+    output.append("<tr><td class='line-number'>"+str(old_file_line_num)+"</td><td class='line-number'>"+str(new_file_line_num)+"</td><td><pre class='diff-table-pre unchanged-line'>" + __htmlFormatString(line) + "</pre></td></tr>")
     old_file_line_num +=1
     new_file_line_num +=1
 
 def __openTable(output):
-    output.append("<table class='diff-table'><colgroup width='4%'/><colgroup width='4%'/><colgroup width='92%'/>")
+    output.append("<table class='diff-table'><colgroup width='2%'/><colgroup width='2%'/><colgroup width='96%'/>")
 
 def __closeTable(output):
     output.append("</table>")
@@ -58,9 +90,9 @@ def getUnifiedDiff(fileContentBefore, fileContentAfter):
     old_file_line_num = 1
     new_file_line_num = 1   
     output = [] 
-    __openTable(output)
+#    __openTable(output)
     __createHTMLViewFromUnifiedDiff(output, difflib.unified_diff(fileContentBefore, fileContentAfter))
-    __closeTable(output) 
+#    __closeTable(output) 
     return output
 
 
