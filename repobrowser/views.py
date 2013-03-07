@@ -6,7 +6,16 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import Group
 from repobrowser.models import Repository
 from svnclient import svncommands
+from django.views.decorators.cache import cache_page
 
+def construct_abs_path(repo_path, relative_path):
+    i = 2
+    j = len(repo_path) - 2
+    while j > -1:
+        if relative_path[:i] == repo_path[j:]:
+            return repo_path[:j] + relative_path
+        j -=1
+        i +=1
 """
  Home page of the user on successful login
  Displays all the repositories that user has access to
@@ -53,6 +62,7 @@ def get_repo_revisions(request):
                  repo_name             = Name of the repository displayed on the page
     """
 @login_required(login_url='/registration/signin/')
+@cache_page(60 * 60 * 24)
 def get_revision_changes(request):
     user_name = get_user_name(request)
     repo_abs_url = request.GET['repo_url']
@@ -64,13 +74,12 @@ def get_revision_changes(request):
     for path in changes:
         changed_path = {} 
         changed_path['change'] = path
-        if path.get_action_on_file() is "Modified":
-            changed_path['diff'] = "\n".join(svncommands.get_unified_html_diff(repo_abs_url, path.get_absolute_path(), int(repo_rev_number)))
-        else:
-            changed_path['diff'] = ""
+        common_path = construct_abs_path(repo_abs_url, path.get_relative_path())
+#            print "common path for "+ path.get_relative_path() + " is = "
+#            print common_path
+        changed_path['diff'] = "\n".join(svncommands.get_unified_html_diff(repo_abs_url, common_path,int(repo_rev_number)))
         changed_paths.append(changed_path)
-    for path in changed_paths:
-        print path['diff']
+
     return render(request, "repobrowser/repo_revision_changes.html",
                 {'user_name':user_name,
                 'repo_name':repo_name,
