@@ -14,7 +14,7 @@ def __createHTMLViewFromUnifiedDiff(output,diff):
     boundaryRecord = None
     startsWithPlus = re.compile(r"^\+.*")
     startsWithMinus = re.compile(r"^\-.*")
-    startsWithQuestion = re.compile(r"^\?.*")
+    startsWithQuestion = re.compile(r"^\@`.*")
     for i in diff:
         if re.search(startsWithPlus, i) != None:
             __writeAddedLine(output, i[1:])
@@ -59,7 +59,7 @@ def getUnifiedDiff(fileContentBefore, fileContentAfter):
     new_file_line_num = 1   
     output = [] 
     __openTable(output)
-    __createHTMLViewFromUnifiedDiff(output, difflib.Differ().compare(fileContentBefore, fileContentAfter))
+    __createHTMLViewFromUnifiedDiff(output, difflib.unified_diff(fileContentBefore, fileContentAfter))
     __closeTable(output) 
     return output
 
