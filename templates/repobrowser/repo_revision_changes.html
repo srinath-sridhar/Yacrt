@@ -15,15 +15,26 @@
             <h2>Changes for revision {{rev_number}} of {{repo_name}}</h2>
                     {%for p in changed_paths%}
                         <br>
-                        <b class="{{p.change.get_action_on_file}}">{{p.change.get_action_on_file}}</b>
-                        <b>&nbsp;&nbsp;{{p.change.get_relative_path}}</b> &nbsp;&nbsp;
-                           <!-- <a href="javascript:void(0);" onclick=expand_view(this,"diff-view-{{forloop.counter}}")>
-                                <i class="icon-minus"></i>
-                           </a> -->
-                           <br>
-                        <div>                        	
-                        	{%autoescape off%} {{p.diff}} {% endautoescape%} 
-                        </div>
+                        <table class="diff-table">
+                            <colgroup width="2%"></colgroup>
+                            <colgroup width="2%"></colgroup>
+                            <colgroup width="96%"></colgroup>
+                            <tbody>
+                                <tr>
+                                    <td class="change-title" colspan=3 style="font-size:20px">
+                                        <b class="{{p.change.get_action_on_file}}">{{p.change.get_action_on_file}}</b>
+                                        <b>&nbsp;&nbsp;{{p.change.get_relative_path}}</b> &nbsp;&nbsp;
+                                        <a href="javascript:void(0);" onclick=expand_view(this,"diff-view-{{forloop.counter}}")>
+                                            <i class="icon-minus"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                <tbody id="diff-view-{{forloop.counter}}">                            
+                                    {%autoescape off%} {{p.diff}} {% endautoescape%} 
+                                </tbody>
+                            </tbody>
+                        </table>
+                        <br>
                     {%endfor%}
         </div>
         <script type="text/javascript" src="{{STATIC_URL}}common/js/jquery.js"></script>
@@ -35,7 +46,7 @@
                 else {
                     $(src_elem).children().attr('class', 'icon-plus');
                 }
-                $('#'+elem_id).toggle();
+                $('#'+elem_id).slideToggle(100);
                 //return false;
             }
         </script>
