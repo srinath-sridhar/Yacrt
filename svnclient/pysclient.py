@@ -18,9 +18,9 @@ class Pysclient:
 
     def get_file_list(self):
         file_list = []
-        for i in svncommands.list(self.client, self.url):
-                l = PylistWrapper(i, self.url)
-                file_list.append(l)
+        # for i in svncommands.list(self.client, self.url):
+        #         l = PylistWrapper(i, self.url)
+        #         file_list.append(l)
                 # Log purposes only
 #                logRepoFileListHeadVersion(self , l)
         return file_list

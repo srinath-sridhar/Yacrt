@@ -2,6 +2,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.shortcuts import redirect, render
 from django.utils.html import strip_tags
@@ -33,5 +34,14 @@ def signout(request):
     else:
         logout(request)
         return render(request, 'registration/signin_form.html', {'success_message': "User successfully logged out",})
-        
 
+def create_new(request):
+    print "Create called"
+    return render(request, 'registration/new.html')
+
+def save_user(request):
+    print "Save called" + request.POST['user_name']
+    new_user = User.objects.create_user(request.POST['name'], request.POST['email'], request.POST['password'])
+    new_user.username = request.POST['user_name']
+    new_user.save()
+    return HttpResponseRedirect('/')

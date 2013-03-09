@@ -1,5 +1,5 @@
 *.pyc
 *.project
 *.pydevproject
-yacrt/settings.py
+yarct/settings.py
 .*DS_Store
