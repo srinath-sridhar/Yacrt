@@ -23,19 +23,6 @@ def get_head_version_number(url):
     return str(c.get_head_revision_number())
 
 """
- @ UNUSED
-
- Get all revisions for a given url and optionally all changed paths
- required for current working of my code. Should be replaced by 
- get_revision_details function
-
- Output - Specify name of wrapper class
-"""
-def get_all_revision_details(url, discover_changes = False):
-    client = create_client(url)
-    return client.get_revisions(discover_changes)
-
-"""
  Gets details of all revisions for a given repository in a range
     Options
         start_rev , end_rev - starting and ending revisions
@@ -120,18 +107,11 @@ def get_side_by_side_html_diff(url, rev_number, file_path):
     return []
 
 
-
-
-
-
-
-
-
 """
 
 Tests and Examples
 
-"""
+
 repoURL = 'svn://192.168.2.21/home/ameya/TestRepo/'
 print "HEAD Revison Number for Repo: " + get_head_version_number(repoURL)
 
@@ -161,3 +141,4 @@ f.write("<html>")
 f.writelines(get_unified_html_diff(repoURL, 'svn://192.168.2.21/home/ameya/TestRepo/src/sorting/InsertionSort.java', 5))
 f.write("</html>")
 
+"""

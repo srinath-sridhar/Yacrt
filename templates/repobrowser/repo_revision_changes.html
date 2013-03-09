@@ -1,0 +1,43 @@
+<html>
+    <head>
+        <link rel="stylesheet" href="{{STATIC_URL}}common/css/bootstrap.css" type="text/css" media="screen"/>
+        <link rel="stylesheet" href="{{STATIC_URL}}common/css/bootstrap-responsive.css" type="text/css" media="screen"/>
+        <link rel="stylesheet" href="{{STATIC_URL}}common/css/yacrt-site.css" type="text/css" media="screen"/>
+    </head>
+    <body>
+
+        <div style="margin-left:1000px; margin-top: 30px; font-size: 14px">
+            Welcome {{user_name}}
+            <br>
+            <a href="/registration/signout/">Logout</a>
+        </div>
+        <div style="width: 1800px; height: 700px; margin-left: 2cm; margin-top: 30px;">
+            <h2>Changes for revision {{rev_number}} of {{repo_name}}</h2>
+                    {%for p in changed_paths%}
+                        <br>
+                        <b class="{{p.change.get_action_on_file}}">{{p.change.get_action_on_file}}</b>
+                        <b>&nbsp;&nbsp;{{p.change.get_relative_path}}</b> &nbsp;&nbsp;
+                           <!-- <a href="javascript:void(0);" onclick=expand_view(this,"diff-view-{{forloop.counter}}")>
+                                <i class="icon-minus"></i>
+                           </a> -->
+                           <br>
+                        <div>                        	
+                        	{%autoescape off%} {{p.diff}} {% endautoescape%} 
+                        </div>
+                    {%endfor%}
+        </div>
+        <script type="text/javascript" src="{{STATIC_URL}}common/js/jquery.js"></script>
+        <script type="text/javascript">
+            function expand_view(src_elem, elem_id) {
+                if ($(src_elem).children().attr('class') == "icon-plus") {
+                    $(src_elem).children().attr('class', 'icon-minus');
+                }
+                else {
+                    $(src_elem).children().attr('class', 'icon-plus');
+                }
+                $('#'+elem_id).toggle();
+                //return false;
+            }
+        </script>
+    </body>
+</html>
