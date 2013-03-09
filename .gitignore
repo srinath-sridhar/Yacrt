@@ -3,3 +3,4 @@ static
 *.project
 *.pydevproject
 yacrt/settings.py
+.*DS_Store
