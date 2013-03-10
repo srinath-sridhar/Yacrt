@@ -2,7 +2,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from django.core.urlresolvers import reverse
 from django.shortcuts import redirect, render
 from django.utils.html import strip_tags
@@ -20,7 +20,7 @@ def authenticate_user(request):
     if user is not None:
         if user.is_active:
             login(request, user)
-            request.session['name'] = user.get_full_name()
+            request.session['username'] = username
             return redirect('/repos/home/')
         else:
             return render(request, 'registration/signin_form.html', {'error_message': "User account disabled",})
@@ -39,9 +39,14 @@ def create_new(request):
     print "Create called"
     return render(request, 'registration/new.html')
 
+# Creation of new user implies creation of a default group for that user.
 def save_user(request):
     print "Save called" + request.POST['user_name']
     new_user = User.objects.create_user(request.POST['name'], request.POST['email'], request.POST['password'])
     new_user.username = request.POST['user_name']
+    group_name = new_user.username + "'s group"
+    group = Group.objects.create(name=group_name)
+    group.save()
+    new_user.groups.add(group)
     new_user.save()
     return HttpResponseRedirect('/')

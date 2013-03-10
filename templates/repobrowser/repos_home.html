@@ -6,16 +6,40 @@
 		<link rel="stylesheet" href="{{STATIC_URL}}common/css/bootstrap.css" type="text/css" media="screen"/>
 		<link rel="stylesheet" href="{{STATIC_URL}}common/css/bootstrap-responsive.css" type="text/css" media="screen"/>
 	</head>
-	<body>
+    <script>
+        function addRepoRow() {
+            $('#repoTable tr:last').after("<tr rowspan='3'><td>" +
+                    "<table class='table table-bordered table-striped' id='addRepoTable'>" +
+                    "<form action='/repos/save/' method='POST'> {% csrf_token %}" +
+                    "<tr><td>Name</td><td><input name='repo_name' type='text'></td></tr>" +
+                    "<tr><td>Description</td><td><input name='repo_descrip' type='text'></td></tr>" +
+                    "<tr><td>URL</td><td><input name='repo_url' type='text'></td></tr>" +
+                    "<tr><td><input type='submit' class='btn btn-primary'></td>" +
+                    "<td><input type='reset' class='btn btn-primary' onclick='cancelAddRepo()'></td></tr></form>" +
+                    "</table></td></tr>");
+            $('#addRepoAnchor').hide();
 
+        }
+
+        function cancelAddRepo() {
+            $('#addRepoTable').remove();
+            $('#repoTable tr:last').remove();
+            $('#addRepoAnchor').show();
+        }
+
+
+    </script>
+	<body>
 		<div style="margin-left:1000px; margin-top: 30px; font-size: 3">
-			Welcome {{user_name}}
+			<h1>Welcome {{username}}</h1>
 			<br>
 			<a href="/registration/signout/">Logout</a>
 		</div>
 		<div style="width: 1200px; height: 700px; margin-left: 2cm; margin-top: 30px;">
 			<h2>Your Repositories</h2>
-			<table class="table table-bordered table-striped">
+            <table class="table table-bordered table-striped" id="repoTable">
+            {% if repos|length != 0 %}
+                <tr><td colspan="4"><a href="#" onclick="addRepoRow()" id="addRepoAnchor">Add some now!</a> </td></tr>
 				<thead>
 					<tr>
 						<th>#</th>
@@ -35,7 +59,10 @@
 					</tr>
 					{%endfor%}
 				</tbody>
-			</table>
+        {% else %}
+            <tr><td>Unfortunately, you have not added any repositories yet. <a href="#" onclick="addRepoRow()">Add some now!</a> </td></tr>
+        {% endif %}
+            </table>
 		</div>
 
 		<script type="text/javascript" src="{{STATIC_URL}}common/js/jquery.js"></script>

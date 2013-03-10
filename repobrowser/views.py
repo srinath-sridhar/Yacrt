@@ -3,7 +3,8 @@ from django.core.urlresolvers import reverse
 from django.shortcuts import redirect, render
 from django.utils.html import strip_tags
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import Group
+from django.contrib.auth.models import Group, User
+from django.http import HttpResponseRedirect, HttpResponse
 from repobrowser.models import Repository
 from svnclient import svncommands
 
@@ -13,9 +14,10 @@ from svnclient import svncommands
     """
 @login_required(login_url='/registration/signin/')
 def repos_home(request):
+    print "Called home"
     user_name = get_user_name(request)
     repos = get_repos(request.user)
-    return render(request, "repobrowser/repos_home.html", {'user_name':user_name, 'repos':repos})
+    return render(request, "repobrowser/repos_home.html", {'username':user_name, 'repos':repos})
 
 # retireves all repos the user has access to
 def get_repos(user):
@@ -24,7 +26,7 @@ def get_repos(user):
 
 # gets user name form session variable and escapes html tags
 def get_user_name(request):
-    user_name = request.session.get('name')
+    user_name = request.session.get('username')
     user_name = strip_tags(user_name)
     return user_name
 
@@ -76,3 +78,20 @@ def get_revision_changes(request):
                 'repo_name':repo_name,
                 'rev_number':repo_rev_number,
                 'changed_paths':changed_paths})
+
+def save(request):
+    user = User.objects.get(username=request.session['username'])
+    print user.username
+    group = Group.objects.filter(user__username__exact=request.session['username'], name__exact=(request.session['username']+"'s group"))
+    error = {}
+    if len(group) == 0:
+        error = {
+            'message' : "You are not a member of any group! So, create your own!"
+        }
+    else:
+        new_repo = Repository.objects.create(repo_access_group_id=group[0].pk)
+        new_repo.repo_name = request.POST['repo_name']
+        new_repo.repo_description = request.POST['repo_descrip']
+        new_repo.repo_url = request.POST['repo_url']
+        new_repo.save()
+    return redirect('/repos/home/')

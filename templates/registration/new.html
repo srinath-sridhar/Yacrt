@@ -2,6 +2,7 @@
 <head>
     <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}common/js/bootstrap.js">
     <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}common/css/bootstrap-responsive.css">
+    <link rel="stylesheet" href="{{STATIC_URL}}common/css/bootstrap.css" type="text/css" media="screen"/>
     <script src="{{ STATIC_URL }}common/js/jquery.js"></script>
     <style type="text/css">
         body {
@@ -47,7 +48,7 @@
 <div class="container hero-unit">
     <form class="form-horizontal form-signin" action="/registration/save" method="POST">
         {% csrf_token %}
-        <h2 class="text-info text-center">Register for Splitbill</h2><hr>
+        <h2 class="text-info text-center">Register for YACRT</h2><hr>
         <div class="control-group">
             <label class="control-label" for="name">Name</label>
             <div class="controls">
