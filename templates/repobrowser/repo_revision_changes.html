@@ -44,7 +44,6 @@
 			{%endfor%}
         </div>
 		<script type="text/javascript" src="{{STATIC_URL}}common/js/jquery.js"></script>
-		<script type="text/javascript" src="{{STATIC_URL}}common/js/handlebars.js"></script>
         <script type="text/javascript">
             function render_comment_template(content, author) {
 		        var  comment= "<div class='comment'> <div class='comment-author-timestamp'>"+author+" commented at "+ Date().toLocaleString()+" </div><div class='comment-content'>"+content+"</div></div>";
@@ -52,12 +51,12 @@
 	        }
 	
             function save_comment(comment_content) {
-                $.post('/comments/save/', 
-                        {'comment_content':comment_content, 'repo_url':{{}}, 'rev_number':{{}}, 'file_path':{{}}, 'line_num':1},
+               /* $.post('/comments/save/', 
+                        {'comment_content':comment_content, 'repo_url':, 'rev_number':, 'file_path':, 'line_num':1},
                         function(data) {
                             return data;
                         })                        
-                        .fail(function() {return {'error_code':1};});
+                        .fail(function() {return {'error_code':1};});*/
 	    	}
 
             function create_comment(e) {
@@ -67,7 +66,7 @@
                 if(comment_content && comment_content != "") {
                      f = $(e).parent();
                      g = $(f).prev()[0];
-		     response = save_comment(comment_content());
+		     //response = save_comment(comment_content());
 		     $(g).append(render_comment_template(comment_content, "Author"));
                 }
                 if(!$(g).is(":visible")){
