@@ -3,3 +3,14 @@ yacrt v1.0
 Yet another code review tool is aimed at creating a open-source web-based easy-to-use Code Review system.
 
 Just create a account, add your repository and start reviewing!
+
+
+
+Currently in development phase, this tool will let you -
+Manage and view your repositories
+Add users to your repositories - this allows them to view commits and review code
+View changes in a commit
+Comment on code changes in each changed file
+View comments made on each changed file
+Add approvers to your commits
+Set limit of approvals needed for a commit
