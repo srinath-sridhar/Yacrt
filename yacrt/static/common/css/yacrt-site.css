@@ -6,7 +6,7 @@
 }
 
 .Modified {
-	color:Yellow;
+	color:Gold;
 }
 .Added {
 	color:Green;
@@ -15,21 +15,26 @@
 	color:Red;
 }
 .unchanged-line {
-    background-color:rgb(250, 250, 250);;
+    background-color:#ffffff;
 }
 
 .removed-line {
-    background-color:rgb(255, 221, 221);
+    background-color:rgb(256, 221, 221);
 }
 
 .added-line {
-    background-color:rgb(220, 255, 220);
+    background-color:rgb(220, 256, 220);
 }
 
 .diff-table {
-	
+	width:100%;
     font-family:Consolas,"Liberation Mono", Courier, monospace; 
     font-size:12px;
+    border:2px dashed #a1a1a1;
+    border-radius:25px;
+}
+.line-number, .change-title {
+    background-color: #ececec;
 }
 
 .diff-table-pre {
@@ -49,4 +54,35 @@
 	border-radius:0;
 	font-family:Consolas,"Liberation Mono", Courier, monospace; 
     font-size:12px;
+    width:100%;
+}
+
+.comment {
+	width:90%;
+	height:90%;
+	margin-left:5%;
+	margin-right:5%;
+	border: 1px solid;
+	border-color: #eaeaea;
+	padding-top:5px;
+}
+
+.comment-author-timestamp {
+	height:30px;
+	background-color:#eaeaea;
+}
+
+#all-comments {
+	width:100%;
+	height:100%;
+}
+
+#new-comment {
+	margin-left:5%;
+	margin-right:5%;
+	padding-top:5px;
+
+}
+
+#comments-holder {
 }
