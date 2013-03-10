@@ -1,43 +1,108 @@
 <html>
     <head>
-        <link rel="stylesheet" href="{{STATIC_URL}}common/css/bootstrap.css" type="text/css" media="screen"/>
-        <link rel="stylesheet" href="{{STATIC_URL}}common/css/bootstrap-responsive.css" type="text/css" media="screen"/>
-        <link rel="stylesheet" href="{{STATIC_URL}}common/css/yacrt-site.css" type="text/css" media="screen"/>
-    </head>
-    <body>
+		<link rel="stylesheet" href="{{STATIC_URL}}common/css/bootstrap.css" type="text/css" media="screen"/>
+		<link rel="stylesheet" href="{{STATIC_URL}}common/css/bootstrap-responsive.css" type="text/css" media="screen"/>
+		<link rel="stylesheet" href="{{STATIC_URL}}common/css/yacrt-site.css" type="text/css" media="screen"/>
+	</head>
+	<body>
 
-        <div style="margin-left:1000px; margin-top: 30px; font-size: 14px">
-            Welcome {{user_name}}
-            <br>
-            <a href="/registration/signout/">Logout</a>
+		<div style="margin-left:1000px; margin-top: 30px; font-size: 14px">
+			Welcome {{user_name}}
+			<br>
+			<a href="/registration/signout/">Logout</a>
+		</div>
+		<div style="width: 100%; height: 100%; margin-top: 30px;">
+			<h2>Changes for revision {{rev_number}} of {{repo_name}}</h2>
+			{%for p in changed_paths%}
+			<br>
+			<table class="diff-table">
+				<colgroup width="2%"></colgroup>
+				<colgroup width="2%"></colgroup>
+				<colgroup width="96%"></colgroup>
+				<tbody>
+					<tr>
+						<td class="change-title" colspan=3 style="font-size:20px"><b class="{{p.change.get_action_on_file}}">{{p.change.get_action_on_file}}</b><b>&nbsp;&nbsp;{{p.change.get_relative_path}}</b> &nbsp;&nbsp; <a href="javascript:void(0);" onclick=expand_view(this,"diff-view-{{forloop.counter}}")> <i class="icon-minus"></i> </a></td>
+					</tr>
+					<tbody id="diff-view-{{forloop.counter}}">
+					{%for line in p.diff%}
+					{%autoescape off%} {{line}} {% endautoescape%}
+					<tr id="comments-row" style="display: none">
+						<td colspan="2" id="comments-count line-number"></td>
+						<td id="comments-holder"><div id="all-comments" style="display: none"></div>
+						<div id="new-comment">
+							<textarea id="new-comment-content" rows="3" style="width: 100%" placeholder="Leave a comment for this line"></textarea>
+							<input type="button" class="btn" id="new-comment-create-button" value="Add Comment"
+							onclick="create_comment(this)"/>
+						</div>
+						</td>
+					</tr>
+					{%endfor%}
+					</tbody>
+				</tbody>
+			</table>
+			<br>
+			{%endfor%}
         </div>
-        <div style="width: 1800px; height: 700px; margin-left: 2cm; margin-top: 30px;">
-            <h2>Changes for revision {{rev_number}} of {{repo_name}}</h2>
-                    {%for p in changed_paths%}
-                        <br>
-                        <b class="{{p.change.get_action_on_file}}">{{p.change.get_action_on_file}}</b>
-                        <b>&nbsp;&nbsp;{{p.change.get_relative_path}}</b> &nbsp;&nbsp;
-                           <!-- <a href="javascript:void(0);" onclick=expand_view(this,"diff-view-{{forloop.counter}}")>
-                                <i class="icon-minus"></i>
-                           </a> -->
-                           <br>
-                        <div>                        	
-                        	{%autoescape off%} {{p.diff}} {% endautoescape%} 
-                        </div>
-                    {%endfor%}
-        </div>
-        <script type="text/javascript" src="{{STATIC_URL}}common/js/jquery.js"></script>
+		<script type="text/javascript" src="{{STATIC_URL}}common/js/jquery.js"></script>
+		<script type="text/javascript" src="{{STATIC_URL}}common/js/handlebars.js"></script>
         <script type="text/javascript">
-            function expand_view(src_elem, elem_id) {
-                if ($(src_elem).children().attr('class') == "icon-plus") {
-                    $(src_elem).children().attr('class', 'icon-minus');
+            function render_comment_template(content, author) {
+		        var  comment= "<div class='comment'> <div class='comment-author-timestamp'>"+author+" commented at "+ Date().toLocaleString()+" </div><div class='comment-content'>"+content+"</div></div>";
+                return comment;
+	        }
+	
+            function save_comment(comment_content) {
+                $.post('/comments/save/', 
+                        {'comment_content':comment_content, 'repo_url':{{}}, 'rev_number':{{}}, 'file_path':{{}}, 'line_num':1},
+                        function(data) {
+                            return data;
+                        })                        
+                        .fail(function() {return {'error_code':1};});
+	    	}
+
+            function create_comment(e) {
+                comment_box = $(e).prev()[0];
+                comment_content = comment_box.value;
+     	        comment_content = comment_content.trim();
+                if(comment_content && comment_content != "") {
+                     f = $(e).parent();
+                     g = $(f).prev()[0];
+		     response = save_comment(comment_content());
+		     $(g).append(render_comment_template(comment_content, "Author"));
                 }
-                else {
-                    $(src_elem).children().attr('class', 'icon-plus');
+                if(!$(g).is(":visible")){
+                    $(g).toggle();
                 }
-                $('#'+elem_id).toggle();
-                //return false;
+                comment_box.value = "";
             }
-        </script>
-    </body>
+
+			function expand_view(src_elem, elem_id) {
+				if ($(src_elem).children().attr('class') == "icon-plus") {
+					$(src_elem).children().attr('class', 'icon-minus');
+				} else {
+					$(src_elem).children().attr('class', 'icon-plus');
+				}
+				$('#' + elem_id).slideToggle(100);
+				//return false;
+			}
+			
+			function show_new_comment_fields() {
+				$(this).next('tr').toggle();
+			}
+
+			$(function() {
+				els = $(this).find('tbody');
+				els.each(function(){
+					id = $(this).attr('id');
+					if(id && id.indexOf('diff-view')>=0) {
+						$(this).children('tr').each(function(){
+							if(!$(this).attr('id') || $(this).attr('id').indexOf('comments-row') <0) {
+								$(this).click(show_new_comment_fields);
+							} 
+						});
+					}
+				});
+			})
+		</script>
+	</body>
 </html>
