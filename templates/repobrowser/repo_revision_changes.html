@@ -28,12 +28,10 @@
 					{%autoescape off%} {{line}} {% endautoescape%}
 					<tr id="comments-row" style="display: none">
 						<td colspan="2" id="comments-count line-number"></td>
-						<td id="comments-holder"><div id="all-comments" style="display: none"></div>
-						<div id="new-comment">
-							<textarea id="new-comment-content" rows="3" style="width: 100%" placeholder="Leave a comment for this line"></textarea>
-							<input type="button" class="btn" id="new-comment-create-button" value="Add Comment"
-							onclick="create_comment(this)"/>
-						</div>
+						<td id="comments-holder">
+                            <div id="all-comments" style="display: none"></div>
+                            <input type="button" class="btn" id="add-new-comment-button" style="display:none;" 
+                                value="Add Comment" onclick="comment_new_action(this)"/>
 						</td>
 					</tr>
 					{%endfor%}
@@ -43,52 +41,80 @@
 			<br>
 			{%endfor%}
         </div>
+        
+        <div id="comment-form" style="display:none;">
+            <textarea id="comment-content" rows="3" style="width: 100%" placeholder="Leave a comment for this line"></textarea>
+            <input type="button" class="btn" id="comment-action-button" value=""
+                onclick="comment_form_action(this)"/>
+            <input type="button" class="btn" id="comment-close-button" value="Close Form"
+                onclick="comment_close_action(this)"/>
+        </div>
+
 		<script type="text/javascript" src="{{STATIC_URL}}common/js/jquery.js"></script>
         <script type="text/javascript">
             function render_comment_template(content, author) {
 		        var  comment= "<div class='comment'> <div class='comment-author-timestamp'>"+author+" commented at "+ Date().toLocaleString()+" </div><div class='comment-content'>"+content+"</div></div>";
                 return comment;
 	        }
-	
-            function save_comment(comment_content) {
-               /* $.post('/comments/save/', 
-                        {'comment_content':comment_content, 'repo_url':, 'rev_number':, 'file_path':, 'line_num':1},
-                        function(data) {
-                            return data;
-                        })                        
-                        .fail(function() {return {'error_code':1};});*/
-	    	}
 
-            function create_comment(e) {
+            //handler invoked when Add Comment button is pressed
+            function comment_new_action(e) {
+                create_comment_form($(e).parent(), "Add Comment");
+                $(e).hide();
+            }
+
+            //handler invoked when comment form button is pressed
+            function comment_form_action(e) {
                 comment_box = $(e).prev()[0];
                 comment_content = comment_box.value;
-     	        comment_content = comment_content.trim();
+                comment_content = comment_content.trim();
+                all_comments = $(e).parent().parent().children("#all-comments");
                 if(comment_content && comment_content != "") {
-                     f = $(e).parent();
-                     g = $(f).prev()[0];
-		     //response = save_comment(comment_content());
-		     $(g).append(render_comment_template(comment_content, "Author"));
-                }
-                if(!$(g).is(":visible")){
-                    $(g).toggle();
+                    //append comment
+                    $(all_comments).append(render_comment_template(comment_content, "Author"));
+                    //show all comments div if reqd
+                    if(!$(all_comments).is(":visible")) {
+                        $(all_comments).show();
+                    }
                 }
                 comment_box.value = "";
             }
 
-			function expand_view(src_elem, elem_id) {
-				if ($(src_elem).children().attr('class') == "icon-plus") {
-					$(src_elem).children().attr('class', 'icon-minus');
-				} else {
-					$(src_elem).children().attr('class', 'icon-plus');
-				}
-				$('#' + elem_id).slideToggle(100);
-				//return false;
-			}
-			
-			function show_new_comment_fields() {
-				$(this).next('tr').toggle();
-			}
+            function update_comment_row_visibility(e) {
+                if (!($(e).children("#all-comments").is(":visible"))) {
+                    $(e).parent().hide();
+                }
+            }
 
+	   //Close Form button functionality
+	    function comment_close_action(e) {
+                update_comment_row_visibility($(e).parent().parent());
+                $(e).parent().prev().show();
+                if($(e).prev().attr('value') == "Add Comment") {
+                    $(e).parent().remove();
+                }
+            }
+
+            //Creates a form and appends it as child of e
+            function create_comment_form(e, action_label) {                
+                comment_form = $('#comment-form').clone();
+                comment_form_elements = $(comment_form).children();
+                comment_form_elements[1].value = action_label;
+                $(comment_form).show();
+                $(e).append($(comment_form));
+                $(comment_form).prev().hide();
+            }
+
+            //handler invoked when diff output row is clicked
+            function comment_action() {
+                e = $(this).next('tr')
+                if(!($(e).is(":visible"))) {
+                    $(e).show();
+                    create_comment_form($(e).children('#comments-holder'), "Add Comment");
+                }
+            }
+
+            //adds on click handler to each of the diff output rows
 			$(function() {
 				els = $(this).find('tbody');
 				els.each(function(){
@@ -96,12 +122,22 @@
 					if(id && id.indexOf('diff-view')>=0) {
 						$(this).children('tr').each(function(){
 							if(!$(this).attr('id') || $(this).attr('id').indexOf('comments-row') <0) {
-								$(this).click(show_new_comment_fields);
+								$(this).click(comment_action);
 							} 
 						});
 					}
 				});
 			})
+
+            //Expand and collapse the diff output
+            function expand_view(src_elem, elem_id) {
+                if ($(src_elem).children().attr('class') == "icon-plus") {
+                    $(src_elem).children().attr('class', 'icon-minus');
+                } else {
+                    $(src_elem).children().attr('class', 'icon-plus');
+                }
+                $('#' + elem_id).slideToggle(100);
+            }
 		</script>
 	</body>
 </html>
