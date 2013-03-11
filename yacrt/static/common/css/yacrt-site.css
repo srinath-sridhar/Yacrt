@@ -64,7 +64,7 @@
 	margin-right:5%;
 	border: 1px solid;
 	border-color: #eaeaea;
-	padding-top:5px;
+    margin-top:5px;
 }
 
 .comment-author-timestamp {
@@ -78,11 +78,22 @@
 }
 
 #new-comment {
-	margin-left:5%;
-	margin-right:5%;
 	padding-top:5px;
-
 }
-
+#comment-close-button {
+    margin-left:80%;
+}
+#comment-form {
+    margin-top: 1%;
+    margin-bottom: 1%;
+    margin-left:5%;
+    margin-right:5%;
+}
 #comments-holder {
+    margin-left:5%;
+    margin-right:5%;
+}
+#add-new-comment-button {
+    margin-left:5%;
+    margin-right:5%;   
 }
