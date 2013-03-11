@@ -64,7 +64,7 @@
 	margin-right:5%;
 	border: 1px solid;
 	border-color: #eaeaea;
-    margin-top:5px;
+    margin-top:1%;
 }
 
 .comment-author-timestamp {
@@ -78,7 +78,7 @@
 }
 
 #new-comment {
-	padding-top:5px;
+	margin-top:1%;
 }
 #comment-close-button {
     margin-left:80%;
@@ -95,5 +95,7 @@
 }
 #add-new-comment-button {
     margin-left:5%;
-    margin-right:5%;   
+    margin-right:5%;
+    margin-top: 1%;
+    margin-bottom: 1%;
 }
