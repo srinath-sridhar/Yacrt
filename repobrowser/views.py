@@ -28,7 +28,7 @@ def construct_abs_path(repo_path, relative_path):
     """
 @login_required(login_url='/registration/signin/')
 def repos_home(request):
-    print "Called home"
+    #print "session user id"+str(request.session['userid'])
     user_name = get_user_name(request)
     repos = get_repos(request.user)
     return render(request, "repobrowser/repos_home.html", {'username':user_name, 'repos':repos})
@@ -54,13 +54,15 @@ def get_user_name(request):
 def get_repo_revisions(request):
     user_name = get_user_name(request)
     repo_abs_url = request.GET['repo_url']
-    repo_name = request.GET['repo_name']    
+    repo_name = request.GET['repo_name'] 
     repo_revisions = svncommands.get_revision_details(repo_abs_url)
+    repo_id = request.GET['repo_id']
     return render(request, "repobrowser/repo_revisions.html",
                    {'user_name':user_name, 
                     'repo_revisions':repo_revisions,
                     'repo_name' : repo_name,
-                    'repo_url':repo_abs_url})
+                    'repo_url':repo_abs_url,
+                    'repo_id':repo_id})
 
 """
  Page shows unified diff for every file path affected in this revision
@@ -74,6 +76,7 @@ def get_revision_changes(request):
     repo_abs_url = request.GET['repo_url']
     repo_rev_number = request.GET['rev_number']
     repo_name = request.GET['repo_name']
+    repo_id = request.GET['repo_id']
     changes = svncommands.get_all_changed_paths(repo_abs_url, repo_rev_number)
     changed_paths = []
 
@@ -88,7 +91,8 @@ def get_revision_changes(request):
                 {'user_name':user_name,
                 'repo_name':repo_name,
                 'rev_number':repo_rev_number,
-                'changed_paths':changed_paths})
+                'changed_paths':changed_paths,
+                'repo_id':repo_id})
 
 def __isAValidFile(relative_file_path):
     splitFilePath = relative_file_path.rsplit('/', 1)
