@@ -1,11 +1,20 @@
-# Create your views here.
 from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import redirect, render
 from django.contrib.auth.models import Group, User
 from repobrowser.models import Repository
 from django.contrib.auth.decorators import login_required
 from django.utils import simplejson
+from datetime import datetime
 
+"""
+    checks if user has access to repo_id
+    params:
+            user_id - id(primary key) of user
+            repo_id - id(primary key) of the repository
+    returns:
+            true - if user has access to repository
+            false - other wise
+"""
 def can_user_access_repo(user_id, repo_id):
     try:
         repo = Repository.objects.get(id=repo_id)
@@ -15,7 +24,6 @@ def can_user_access_repo(user_id, repo_id):
             try:
                 user = User.objects.get(pk=user_id)
                 access_group_id = repo.repo_access_group.id
-                print access_group_id
                 group = user.groups.filter(id=access_group_id)
                 if len(group) == 0:
                     print "user not allowed"
@@ -30,27 +38,222 @@ def can_user_access_repo(user_id, repo_id):
         print "rerror retriving repo data"
         return False
 
-def create_new_comment(user_id, repo_id, revision_number, file_path, ):
+"""
+    checks if user can change / delete a comment
+    params:
+            user_id    - id(primary key) of user
+            comment_id - id(primary key) of the comment
+    returns:
+            comment object  - if user can change / delete comment
+            None - other wise
+"""
+def can_user_change_comment(user_id, comment_id):
+    try:
+        comment = Comment.objects.filter(id=comment_id, user=user_id)
+        if comment is None or len(comment) == 0:
+            return None
+        else:
+            return comment[0]
+    except:
+        return None
 
+"""
+    creates and saves a comment object in the datebase
+    params:
+            user_id - user who created the comment
+            repository_id - on which repository
+            revision_number - for which revision number in repository
+            path - path of particular file in the given revision of the repository
+            line - line number this comment applies to
+            content - content of the comment
+    returns:
+            comment_id, timestamp - on successfully saving object to datebase
+            None - if there is an error
+"""
+def create_new_comment(user_id, repository_id, revision_number, path, line, comment):
+    try:
+        now = datetime.now()
+        comment = Comment.objects.create(
+                                    user=user_id,
+                                    repo_id=repository_id,
+                                    repo_revision=revision_number,
+                                    file_path=path,
+                                    line_number=line,
+                                    content=comment,
+                                    timestamp=now)    
+        comment.save()
+        return (comment.id, now) 
+
+    except:    
+        return None
+
+"""
+    updates the comment content and timestamp
+    params:
+            comment - object corresponding to comment in database
+            new_content - updated content for the comment
+    returns:
+            0 - on success
+            1 - on error
+"""
+def update_comment(comment, new_content):
+    try:
+        now = datetime.now()
+        comment.timestamp = now
+        comment.content = new_content
+        comment.save()
+        return now
+    except:
+        return None
+
+"""
+    deletes the comment object from the database
+    params:
+            comment - object corresponding to comment in database
+    returns:
+            0 - on success
+            1 - otherwise
+"""
+def destroy_comment(comment):
+    try:
+        comment.delete()
+        return 0
+    except:
+        return 1
+
+"""
+    Create a new comment and saves it in the database
+    params from HTTP request:
+            repo_id = id of the repository
+            revision_number = repo revision number
+            file_path = path to the file
+            line number = line_number in file
+            content = comment content
+            user_id  = from session
+
+    Prerequisites:
+            User should be logged in.
+            User should have access to the repository.
+"""
 @login_required(login_url='/registration/signin/')
 def create(request):
-    repo_id = request.GET['repo_id']
+    data = {}
     user_id = request.session['user_id']
+    repo_id = request.GET['repo_id']
 
-    can_user_access_repo(user_id, repo_id)
+    #check if user has access to repo
+    if can_user_access_repo(user_id, repo_id) is True:
+        #Get params from get request
+        revision_number = request.GET['revision_number']
+        file_path = request.GET['file_path']
+        line_number = reques.GET['line_number']
+        content = request.GET['content']
 
-    data = simplejson.dumps({})
-    return HttpResponse(data, mimetype='application/json')
+        #create comment
+        (comment_id, ts) = create_new_comment(user_id, repo_id, revision_number, file_path, line_number, content)
+        if comment_id is None:
+            author = request.session['username']
+            data['error_code'] = 0
+            data['error_msg'] = "Comment created successfully"
+            data['author'] = author
+            data['timestamp'] = ts
+            data['comment_id'] = comment_id
+        else:
+            data['error_code'] = 2
+            data['error_msg'] = "Oops something went wrong! unable to create comment, try again"
+            data['author'] = ""
+            data['timestamp'] = ""
+            data['comment_id'] = ""
+    else:
+        data['error_code'] = 1
+        data['error_msg'] = "User does not have accesss to the repository"
+        data['author'] = ""
+        data['timestamp'] = ""
+        data['comment_id'] = ""
 
-def save(request):
-    data = simplejson.dumps({})
-    return HttpResponse(data, mimetype='application/json')
+    return HttpResponse(simplejson.dumps(data), mimetype='application/json')
 
+"""
+    Update the content of an existing comment
+    params from HTTP request:
+            comment_id = id of the comment
+            user_id  = from session
+
+    Prerequisites:
+            User should be logged in.
+            User should have access to the repository.
+            User is allowed to change comment
+"""
+@login_required(login_url='/registration/signin/')
 def edit(request):
-    data = simplejson.dumps({})
-    return HttpResponse(data, mimetype='application/json')
+    data = {}
+    user_id = request.session['user_id']
+    comment_id = request.GET['comment_id']
+    repo_id = request.GET['repo_id']
 
-def destror(request):
-    data = simplejson.dumps({})
-    return HttpResponse(data, mimetype='application/json')
+    #check if user has access to repo
+    if can_user_access_repo(user_id, repo_id) is True:
+        comment = can_user_change_comment(user_id, comment_id)
+        if comment != None:
+            new_content = request.GET['new_content']
+            new_timestamp = update_comment(comment, new_content)
+            if new_timestamp != None:
+                data['error_code'] = 0
+                data['error_msg'] = "Comment updated successfully"
+                data['new_timestamp'] = new_timestamp
 
+            else:
+                data['error_code'] = 2
+                data['error_msg'] = "Oops something went wrong! unable to update comment, try again"
+                data['new_timestamp'] = ""
+        else:
+            data['error_code'] = 3
+            data['error_msg'] = "User is not allowed to change comment"
+            data['new_timestamp'] = ""
+
+    else:
+        data['error_code'] = 1
+        data['error_msg'] = "User does not have accesss to the repository"
+        data['new_timestamp'] = ""
+
+    return HttpResponse(simplejson.dumps(data), mimetype='application/json')
+
+"""
+    delete an existing comment
+    params from HTTP request:
+            comment_id = id of the comment
+            user_id  = from session
+
+    Prerequisites:
+            User should be logged in.
+            User should have access to the repository.
+            User is allowed to change comment
+"""
+@login_required(login_url='/registration/signin/')
+def destroy(request):
+    data = {}
+    user_id = request.session['user_id']
+    comment_id = request.GET['comment_id']
+    repo_id = request.GET['repo_id']
+
+    #check if user has access to repo
+    if can_user_access_repo(user_id, repo_id) is True:
+        comment = can_user_change_comment(user_id, comment_id)
+        if comment != None:
+            if destroy_comment(comment) == 0:
+                data['error_code'] = 0
+                data['error_msg'] = "Comment deleted successfully"
+
+            else:
+                data['error_code'] = 2
+                data['error_msg'] = "Oops something went wrong! unable to delete comment, try again"
+
+        else:
+            data['error_code'] = 3
+            data['error_msg'] = "User is not allowed to delete comment"
+
+    else:
+        data['error_code'] = 1
+        data['error_msg'] = "User does not have accesss to the repository"
+
+    return HttpResponse(simplejson.dumps(data), mimetype='application/json')
