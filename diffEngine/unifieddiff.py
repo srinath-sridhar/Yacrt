@@ -68,13 +68,13 @@ def __writeDeletedLine(output, line):
 
 def __writeAddedLine(output, line):
     global new_file_line_num
-    output.append("<tr><td class='line-number'></td><td class='line-number'>"+str(new_file_line_num)+"</td><td><pre class=' diff-table-pre added-line'>" + __htmlFormatString(line) + "</pre></td></tr>")
+    output.append("<tr onclick='diff_line_clicked_action(this,"+str(new_file_line_num)+")'><td class='line-number'></td><td class='line-number'>"+str(new_file_line_num)+"</td><td><pre class=' diff-table-pre added-line'>" + __htmlFormatString(line) + "</pre></td></tr>")
     new_file_line_num +=1
     
 def __writeLine(output, line):
     global old_file_line_num
     global new_file_line_num
-    output.append("<tr><td class='line-number'>"+str(old_file_line_num)+"</td><td class='line-number'>"+str(new_file_line_num)+"</td><td><pre class='diff-table-pre unchanged-line'>" + __htmlFormatString(line) + "</pre></td></tr>")
+    output.append("<tr onclick='diff_line_clicked_action(this,"+str(old_file_line_num)+ ")'><td class='line-number'>"+str(old_file_line_num)+"</td><td class='line-number'>"+str(new_file_line_num)+"</td><td><pre class='diff-table-pre unchanged-line'>" + __htmlFormatString(line) + "</pre></td></tr>")
     old_file_line_num +=1
     new_file_line_num +=1
 
