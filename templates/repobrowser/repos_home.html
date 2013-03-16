@@ -7,29 +7,45 @@
 		<link rel="stylesheet" href="{{STATIC_URL}}common/css/bootstrap-responsive.css" type="text/css" media="screen"/>
 	</head>
     <script>
-        function addRepoRow() {
-            $('#repoTable tr:last').after("<tr rowspan='3'><td>" +
-                    "<table class='table table-bordered table-striped' id='addRepoTable'>" +
-                    "<form action='/repos/save/' method='POST'> {% csrf_token %}" +
-                    "<tr><td>Name</td><td><input name='repo_name' type='text'></td></tr>" +
-                    "<tr><td>Description</td><td><input name='repo_descrip' type='text'></td></tr>" +
-                    "<tr><td>URL</td><td><input name='repo_url' type='text'></td></tr>" +
-                    "<tr><td><input type='submit' class='btn btn-primary'></td>" +
-                    "<td><input type='reset' class='btn btn-primary' onclick='cancelAddRepo()'></td></tr></form>" +
-                    "</table></td></tr>");
-            $('#addRepoAnchor').hide();
 
-        }
-
-        function cancelAddRepo() {
-            $('#addRepoTable').remove();
-            $('#repoTable tr:last').remove();
-            $('#addRepoAnchor').show();
-        }
 
 
     </script>
 	<body>
+
+        <div id="addRepoModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+            <form action='/repos/save/' method='POST'> {% csrf_token %}
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h3 id="addRepoModalHeader">Add a new Repository</h3>
+            </div>
+
+            <div class="modal-body">
+
+                    <table class='table table-bordered table-striped' id='addRepoTable'>
+
+                            <tr>
+                                <td>Name</td>
+                                <td><input name='repo_name' type='text' placeholder="Repository Name"></td>
+                            </tr>
+                            <tr>
+                                <td>Description</td>
+                                <td><input name='repo_descrip' type='text' placeholder="Description"></td>
+                            </tr>
+                            <tr>
+                                <td>URL</td>
+                                <td><input name='repo_url' type='text' pattern="^(svn|http):.*" placeholder="svn: or http:"></td>
+                            </tr>
+                    </table>
+
+            </div>
+            <div class="modal-footer">
+                <button class='btn'  data-dismiss="modal" aria-hidden="true">Cancel</button>
+                <input type='reset' class='btn'>
+                <input class="btn btn-primary" type="submit">
+            </div>
+            </form>
+        </div>
 		<div style="margin-left:1000px; margin-top: 30px; font-size: 3">
 			<h1>Welcome {{username}}</h1>
 			<br>
@@ -37,9 +53,19 @@
 		</div>
 		<div style="width: 1200px; height: 700px; margin-left: 2cm; margin-top: 30px;">
 			<h2>Your Repositories</h2>
+            {% if errors|length > 0 %}
+               {% for k,v in messages.iteritems %}
+                    <div class="alert alert-{{ k }}">
+                    <button type="button" class="close" data-dismiss="alert">&times;</button>
+                        {{ v }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+                <div class="alert alert-info" style="padding: 5px;">
+                    <a href="#addRepoModal" role="button" class="btn" data-toggle="modal">Add a Repository</a>
+                </div>
             <table class="table table-bordered table-striped" id="repoTable">
             {% if repos|length != 0 %}
-                <tr><td colspan="4"><a href="#" onclick="addRepoRow()" id="addRepoAnchor">Add some now!</a> </td></tr>
 				<thead>
 					<tr>
 						<th>#</th>
@@ -60,7 +86,7 @@
 					{%endfor%}
 				</tbody>
         {% else %}
-            <tr><td>Unfortunately, you have not added any repositories yet. <a href="#" onclick="addRepoRow()">Add some now!</a> </td></tr>
+            <tr><td>Unfortunately, you have not added any repositories yet.</tr>
         {% endif %}
             </table>
 		</div>

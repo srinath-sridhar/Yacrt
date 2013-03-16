@@ -35,7 +35,7 @@ def get_head_version_number(url):
 
     Returns List of Pysrev instances
 """                           
-def get_revision_details(url, start_rev=None, end_rev=None, discover_changes=False):
+def     get_revision_details(url, start_rev=None, end_rev=None, discover_changes=False):
     client = __create_client(url)
     return client.get_revisions(start_rev, end_rev, discover_changes)
 

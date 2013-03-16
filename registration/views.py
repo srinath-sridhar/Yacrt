@@ -21,6 +21,7 @@ def authenticate_user(request):
         if user.is_active:
             login(request, user)
             request.session['username'] = username
+            request.session['messages']= {}
             return redirect('/repos/home/')
         else:
             return render(request, 'registration/signin_form.html', {'error_message': "User account disabled",})
