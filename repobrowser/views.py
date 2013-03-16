@@ -9,6 +9,12 @@ from repobrowser.models import Repository
 from svnclient import svncommands
 from svnclient import exceptions
 
+
+INVALID_FILES = {
+    '.settings', '.classpath', '.idea', '.DStore'
+}
+
+
 def construct_abs_path(repo_path, relative_path):
     i = 2
     j = len(repo_path) - 2
