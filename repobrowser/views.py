@@ -77,7 +77,12 @@ def get_revision_changes(request):
         changed_path = {}
         changed_path['change'] = path
         common_path = construct_abs_path(repo_abs_url, path.get_relative_path())
-        changed_path['diff'] = svncommands.get_unified_html_diff(repo_abs_url, common_path,int(repo_rev_number))
+        if __isAValidFile(path.get_relative_path()) and path.get_action_on_file() == 'Modified':
+            changed_path['diff'] = svncommands.get_unified_html_diff(repo_abs_url, common_path, int(repo_rev_number))
+        elif __isAValidFile(path.get_relative_path()) and path.get_action_on_file() != 'Modified':
+            changed_path['diff'] = svncommands.get_unified_html_diff(repo_abs_url, common_path, int(repo_rev_number))
+        else:
+            changed_path['diff'] = None
         changed_paths.append(changed_path)
 
     return render(request, "repobrowser/repo_revision_changes.html",
@@ -85,6 +90,15 @@ def get_revision_changes(request):
                 'repo_name':repo_name,
                 'rev_number':repo_rev_number,
                 'changed_paths':changed_paths})
+
+def __isAValidFile(relative_file_path):
+    splitFilePath = relative_file_path.rsplit('/', 1)
+    if len(splitFilePath) > 1:
+        if splitFilePath[1].find('.') != -1:
+            return True
+    return False
+
+
 
 def save(request):
     user = User.objects.get(username=request.session['username'])

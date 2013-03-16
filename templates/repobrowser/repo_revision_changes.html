@@ -25,6 +25,7 @@
                                             <b class="{{p.change.get_action_on_file}}">{{p.change.get_action_on_file}}</b>
                                             <b>&nbsp;&nbsp;{{p.change.get_relative_path}}</b> &nbsp;&nbsp;
                                         </a>
+                                            {% if p.diff %}
                                             <div id="collapse{{ forloop.counter }}" class="accordion-body collapse in">
                                                 <div class="accordion-inner">
                                                     <div class="auto-hide-scroll" >
@@ -38,6 +39,7 @@
                                                     </div>
                                                 </div>
                                             </div>
+                                            {% endif %}
                                         </div>
                                     </div>
                                 </div>
