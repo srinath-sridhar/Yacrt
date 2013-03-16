@@ -8,6 +8,10 @@ from django.http import HttpResponseRedirect, HttpResponse
 from repobrowser.models import Repository
 from svnclient import svncommands
 
+INVALID_FILES = {
+    '.settings', '.classpath', '.idea', '.DStore'
+}
+
 def construct_abs_path(repo_path, relative_path):
     i = 2
     j = len(repo_path) - 2
@@ -94,8 +98,12 @@ def get_revision_changes(request):
 def __isAValidFile(relative_file_path):
     splitFilePath = relative_file_path.rsplit('/', 1)
     if len(splitFilePath) > 1:
-        if splitFilePath[1].find('.') != -1:
-            return True
+        typeSplit = splitFilePath[1].split('.')
+        if len(typeSplit) > 1:
+                if typeSplit[0] == '':
+                    return False
+                else:
+                    return True
     return False
 
 
