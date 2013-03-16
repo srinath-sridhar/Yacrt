@@ -15,35 +15,47 @@
             <h2>Changes for revision {{rev_number}} of {{repo_name}}</h2>
                     {%for p in changed_paths%}
                         <br>
-                        <b class="{{p.change.get_action_on_file}}">{{p.change.get_action_on_file}}</b>
-                        <b>&nbsp;&nbsp;{{p.change.get_relative_path}}</b> &nbsp;&nbsp;
-                           <!-- <a href="javascript:void(0);" onclick=expand_view(this,"diff-view-{{forloop.counter}}")>
-                                <i class="icon-minus"></i>
-                           </a> -->
-                           <br>
-                        <div class="auto-hide-scroll" >
-                        <div class="diff-table" style="width:2000px;">
-                        	{%autoescape off%}
-                                {% for line in p.diff %}
-                                    {{ line }}
-                                {% endfor %}
-                        	 {% endautoescape%}
-                        </div>
+                        <div class="row-fluid">
+                            <div class="span7">
+                                <div class="accordion" id="accordion2">
+                                    <div class="accordion-group">
+                                        <div class="accordion-heading" >
+                                        <a  onclick="onExpandIsClicked({{ forloop.counter }})" id="expand{{ forloop.counter }}" class="accordion-toggle" data-toggle="collapse" data-parent="#accordion2" href="#collapse{{ forloop.counter }}">
+                                            <i id="expandIcon{{ forloop.counter }}" class="icon-minus-sign"></i>
+                                            <b class="{{p.change.get_action_on_file}}">{{p.change.get_action_on_file}}</b>
+                                            <b>&nbsp;&nbsp;{{p.change.get_relative_path}}</b> &nbsp;&nbsp;
+                                        </a>
+                                            <div id="collapse{{ forloop.counter }}" class="accordion-body collapse in">
+                                                <div class="accordion-inner">
+                                                    <div class="auto-hide-scroll" >
+                                                    <div class="diff-table" style="width:2000px;">
+                                                        {%autoescape off%}
+                                                            {% for line in p.diff %}
+                                                                {{ line }}
+                                                            {% endfor %}
+                                                         {% endautoescape%}
+                                                    </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     {%endfor%}
         </div>
         <script type="text/javascript" src="{{STATIC_URL}}common/js/jquery.js"></script>
+        <script type="text/javascript" src="{{STATIC_URL}}common/js/bootstrap.js"></script>
         <script type="text/javascript">
-            function expand_view(src_elem, elem_id) {
-                if ($(src_elem).children().attr('class') == "icon-plus") {
-                    $(src_elem).children().attr('class', 'icon-minus');
-                }
-                else {
-                    $(src_elem).children().attr('class', 'icon-plus');
-                }
-                $('#'+elem_id).toggle();
-                //return false;
-            }
+             function onExpandIsClicked(iconNumber) {
+                   var expandClass = $('#expandIcon'+iconNumber).attr("class");
+                   if( expandClass == "icon-minus-sign") {
+                       $('#expandIcon'+iconNumber).attr('class', 'icon-plus-sign');
+                   } else {
+                       $('#expandIcon'+iconNumber).attr('class', 'icon-minus-sign');
+                    }
+             }
         </script>
     </body>
 </html>
