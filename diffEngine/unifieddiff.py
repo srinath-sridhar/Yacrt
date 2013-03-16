@@ -88,7 +88,9 @@ def getUnifiedDiff(fileContentBefore, fileContentAfter):
     global old_file_line_num
     global new_file_line_num
     old_file_line_num = 1
-    new_file_line_num = 1   
+    new_file_line_num = 1
+    if fileContentBefore == None:
+        fileContentBefore = ""
     output = [] 
     __openTable(output)
     __createHTMLViewFromUnifiedDiff(output, difflib.unified_diff(fileContentBefore, fileContentAfter))

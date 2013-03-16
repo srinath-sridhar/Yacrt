@@ -20,7 +20,7 @@
                                 <div class="accordion" id="accordion2">
                                     <div class="accordion-group">
                                         <div class="accordion-heading" >
-                                            {% if p.diff %}
+                                            {% if p.diff|length > 2 %}
                                             <a  onclick="onExpandIsClicked({{ forloop.counter }})" id="expand{{ forloop.counter }}" class="accordion-toggle" data-toggle="collapse" data-parent="#accordion2" href="#collapse{{ forloop.counter }}">
                                                 <i id="expandIcon{{ forloop.counter }}" class="icon-plus-sign"></i>
                                             {% else %}
