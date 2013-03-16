@@ -3,6 +3,7 @@ import sys
 import pysvn
 from revisionwrapper import Pysvrev
 from pylistwrapper import PylistWrapper
+from exceptions import SVNExceptions
 
 class Pysclient:
     
@@ -60,12 +61,14 @@ class Pysclient:
             startRev = pysvn.Revision(pysvn.opt_revision_kind.number, startRevision)
             endRev = pysvn.Revision(pysvn.opt_revision_kind.number, endRevision)
 
-
-        for i in self.client.log(self.url, startRev, endRev, discover_changed_paths):
-            revision_list.append(Pysvrev(i, self.url))
-            # Log purposes only
-            # logRevisionListForARepo(Pysvrev(i, self.url))
-        return revision_list
+        try:
+            for i in self.client.log(self.url, startRev, endRev, discover_changed_paths):
+                revision_list.append(Pysvrev(i, self.url))
+                # Log purposes only
+                # logRevisionListForARepo(Pysvrev(i, self.url))
+            return revision_list
+        except pysvn.ClientError,e:
+            raise SVNExceptions("The SVN cannot be contacted!")
 
 # End class
 

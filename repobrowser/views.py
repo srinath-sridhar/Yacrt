@@ -7,6 +7,7 @@ from django.contrib.auth.models import Group, User
 from django.http import HttpResponseRedirect, HttpResponse
 from repobrowser.models import Repository
 from svnclient import svncommands
+from svnclient import exceptions
 
 def construct_abs_path(repo_path, relative_path):
     i = 2
@@ -24,10 +25,16 @@ def construct_abs_path(repo_path, relative_path):
     """
 @login_required(login_url='/registration/signin/')
 def repos_home(request):
-    #print "session user id"+str(request.session['userid'])
     user_name = get_user_name(request)
     repos = get_repos(request.user)
-    return render(request, "repobrowser/repos_home.html", {'username':user_name, 'repos':repos})
+    messages = __get_messages(request)
+    return render(request, "repobrowser/repos_home.html", {'username':user_name, 'repos':repos, 'messages': messages})
+
+# will retrieve all messages related to any previous actions and clear the session variable
+def __get_messages(request):
+    returnList = request.session['messages']
+    request.session['messages'] = {}
+    return returnList
 
 # retireves all repos the user has access to
 def get_repos(user):
@@ -50,15 +57,21 @@ def get_user_name(request):
 def get_repo_revisions(request):
     user_name = get_user_name(request)
     repo_abs_url = request.GET['repo_url']
-    repo_name = request.GET['repo_name'] 
-    repo_revisions = svncommands.get_revision_details(repo_abs_url)
-    repo_id = request.GET['repo_id']
-    return render(request, "repobrowser/repo_revisions.html",
-                   {'user_name':user_name, 
-                    'repo_revisions':repo_revisions,
-                    'repo_name' : repo_name,
-                    'repo_url':repo_abs_url,
-                    'repo_id':repo_id})
+    repo_name = request.GET['repo_name']
+    try:
+        repo_revisions = svncommands.get_revision_details(repo_abs_url)
+        repo_id = request.GET['repo_id']
+        return render(request, "repobrowser/repo_revisions.html",
+                       {'user_name':user_name,
+                        'repo_revisions':repo_revisions,
+                        'repo_name' : repo_name,
+                        'repo_url':repo_abs_url,
+                        'repo_id':repo_id})
+    except exceptions.SVNExceptions, e:
+        request.session['messages'] = {
+            'error' : e.value
+        }
+        return redirect("/repos/home/")
 
 """
  Page shows unified diff for every file path affected in this revision
@@ -91,18 +104,37 @@ def get_revision_changes(request):
                 'repo_id':repo_id})
 
 def save(request):
+    print "Called save!"
     user = User.objects.get(username=request.session['username'])
     print user.username
     group = Group.objects.filter(user__username__exact=request.session['username'], name__exact=(request.session['username']+"'s group"))
-    error = {}
     if len(group) == 0:
-        error = {
-            'message' : "You are not a member of any group! So, create your own!"
+        print "setting errors"
+        request.session['messages'] = {
+            'error' : "Oops! You can't add a repository as this time since you are a user from the previous release. Please contact Admin to adapt you to this version."
         }
     else:
+        print "Creating objects"
         new_repo = Repository.objects.create(repo_access_group_id=group[0].pk)
         new_repo.repo_name = request.POST['repo_name']
         new_repo.repo_description = request.POST['repo_descrip']
         new_repo.repo_url = request.POST['repo_url']
         new_repo.save()
+        request.session['messages']  = {
+            'success' : "Repository has been successfully added."
+        }
     return redirect('/repos/home/')
+
+
+
+def __isAValidFile(relative_file_path):
+    splitFilePath = relative_file_path.rsplit('/', 1)
+    if len(splitFilePath) > 1:
+        typeSplit = splitFilePath[1].split('.')
+        if len(typeSplit) > 1:
+            if typeSplit[0] == '':
+                return False
+            else:
+                return True
+    return False
+
