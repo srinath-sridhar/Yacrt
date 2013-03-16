@@ -79,7 +79,7 @@ def __writeLine(output, line):
     new_file_line_num +=1
 
 def __openTable(output):
-    output.append("<table class='diff-table'><colgroup width='2%'/><colgroup width='2%'/><colgroup width='96%'/>")
+    output.append("<table class='diff-table table-hover' cellpadding='10'>")
 
 def __closeTable(output):
     output.append("</table>")
@@ -90,9 +90,9 @@ def getUnifiedDiff(fileContentBefore, fileContentAfter):
     old_file_line_num = 1
     new_file_line_num = 1   
     output = [] 
-#    __openTable(output)
+    __openTable(output)
     __createHTMLViewFromUnifiedDiff(output, difflib.unified_diff(fileContentBefore, fileContentAfter))
-#    __closeTable(output) 
+    __closeTable(output)
     return output
 
 

@@ -30,6 +30,7 @@
 	
     font-family:Consolas,"Liberation Mono", Courier, monospace; 
     font-size:12px;
+    background-color:rgb(250, 250, 250);
 }
 
 .diff-table-pre {
@@ -49,4 +50,19 @@
 	border-radius:0;
 	font-family:Consolas,"Liberation Mono", Courier, monospace; 
     font-size:12px;
+    width: 2000px;
+}
+
+.line-number {
+    padding: 5px;;
+}
+
+.auto-hide-scroll {
+    background-color:rgb(250, 250, 250);
+    width:1000px;
+    overflow: hidden;
+}
+
+.auto-hide-scroll:hover {
+    overflow: scroll;
 }

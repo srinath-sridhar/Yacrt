@@ -21,8 +21,14 @@
                                 <i class="icon-minus"></i>
                            </a> -->
                            <br>
-                        <div>                        	
-                        	{%autoescape off%} {{p.diff}} {% endautoescape%} 
+                        <div class="auto-hide-scroll" >
+                        <div class="diff-table" style="width:2000px;">
+                        	{%autoescape off%}
+                                {% for line in p.diff %}
+                                    {{ line }}
+                                {% endfor %}
+                        	 {% endautoescape%}
+                        </div>
                         </div>
                     {%endfor%}
         </div>
