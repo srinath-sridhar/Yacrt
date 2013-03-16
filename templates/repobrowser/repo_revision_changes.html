@@ -15,6 +15,8 @@
 			<h2>Changes for revision {{rev_number}} of {{repo_name}}</h2>
 			{%for p in changed_paths%}
 			<br>
+            <div class="auto-hide-scroll">
+            <div style="width: 2000px;">
 			<table class="diff-table">
 				<colgroup width="2%"></colgroup>
 				<colgroup width="2%"></colgroup>
@@ -38,6 +40,8 @@
 					</tbody>
 				</tbody>
 			</table>
+            </div>
+            </div>
 			<br>
 			{%endfor%}
         </div>
