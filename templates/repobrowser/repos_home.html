@@ -5,6 +5,7 @@
 	<head>
 		<link rel="stylesheet" href="{{STATIC_URL}}common/css/bootstrap.css" type="text/css" media="screen"/>
 		<link rel="stylesheet" href="{{STATIC_URL}}common/css/bootstrap-responsive.css" type="text/css" media="screen"/>
+
 	</head>
     <script>
 
@@ -14,7 +15,7 @@
 	<body>
 
         <div id="addRepoModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-            <form action='/repos/save/' method='POST'> {% csrf_token %}
+            <form id="repo_form" action='/repos/save/' method='POST'> {% csrf_token %}
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
                 <h3 id="addRepoModalHeader">Add a new Repository</h3>
@@ -26,16 +27,17 @@
 
                             <tr>
                                 <td>Name</td>
-                                <td><input name='repo_name' type='text' placeholder="Repository Name"></td>
+                                <td><input id="repo_name" name='repo_name' type='text' placeholder="Repository Name" required></td>
                             </tr>
                             <tr>
                                 <td>Description</td>
-                                <td><input name='repo_descrip' type='text' placeholder="Description"></td>
+                                <td><input id="repo_description" name='repo_descrip' type='text' placeholder="Description" required></td>
                             </tr>
                             <tr>
                                 <td>URL</td>
-                                <td><input name='repo_url' type='text' pattern="^(svn|http):.*" placeholder="svn: or http:"></td>
+                                <td><input id="repo_url" name='repo_url' type='text' pattern="^(svn|http):.*" placeholder="svn: or http:" required></td>
                             </tr>
+                            <tr><td><input type="hidden" name="repo_identifier" id="repo_identifier" value=" "></td></tr>
                     </table>
 
             </div>
@@ -46,8 +48,9 @@
             </div>
             </form>
         </div>
+        {% if user %}
 		<div style="margin-left:1000px; margin-top: 30px; font-size: 3">
-			<h1>Welcome {{username}}</h1>
+			<h1>Welcome {{user.username}}</h1>
 			<br>
 			<a href="/registration/signout/">Logout</a>
 		</div>
@@ -82,6 +85,17 @@
 						<td><a href='/repos/revisions/?repo_url={{repo.repo_url}}&repo_name={{repo.repo_name}}&repo_id={{repo.id}}'>
 							View revision history for {{repo.repo_name}}</a></td>
 						<td>{{repo.repo_description}}</td>
+                        <td style="text-align: center">
+                            {% if repo.repo_created_by_id == user.pk %}
+                                <a class="editRepo" id="editRepo_{{ forloop.counter }}" href="/repos/edit/" data-toggle="tooltip" title="Click to edit this repository." >
+                                <input type="hidden" id="repo_edit_id__{{ forloop.counter }}" value="{{ repo.id }}"> <input type="hidden" id="user_edit_name__{{ forloop.counter }}" value="{{ user }}">
+                                    <i class="icon-pencil"></i></a> &nbsp;
+                                <a href="/repos/delete/?repo={{ repo.id }}&user={{ user }}"  data-toggle="tooltip" title="Click to delete this repository.">
+                                    <i class="icon-remove"></i></a>
+                            {% else %}
+                                No actions available.
+                            {% endif %}
+                        </td>
 					</tr>
 					{%endfor%}
 				</tbody>
@@ -90,9 +104,32 @@
         {% endif %}
             </table>
 		</div>
-
-		<script type="text/javascript" src="{{STATIC_URL}}common/js/jquery.js"></script>
-		<script type="text/javascript" src="{{STATIC_URL}}common/js/bootstrap.js"></script>
+        {% else %}
+            <div class="alert alert-error">
+                <h1>Incorrect Access! Please logoff and login again.</h1>
+            </div>
+        {% endif %}
+        <script type="text/javascript" src="{{STATIC_URL}}common/js/jquery.js"></script>
+        <script type="text/javascript" src="{{STATIC_URL}}common/js/bootstrap.js"></script>
+        <script type="text/javascript" src="{{STATIC_URL}}common/js/json2.js"></script>
+        <script type="text/javascript" src="{{STATIC_URL}}common/js/core.js"></script>
+        <script type="text/javascript" src="{{STATIC_URL}}common/js/md5.js"></script>
+        <script type="text/javascript" src="{{STATIC_URL}}common/js/jquery.dirtyFields.js"></script>
+        <script>
+            $('.editRepo').click(function(event){
+                event.preventDefault();
+                var id = $(this).attr('id').replace('editRepo_', '');
+                var user_id = "#user_edit_name__" + id;
+                var done = $.post("/repos/edit/", { repo_id: $('#repo_edit_id__' + id).val(), username: $('#user_edit_name__' + id).val() , csrfmiddlewaretoken: "{{ csrf_token }}"} );
+                done.done(function( data ) {
+                    $('#repo_identifier').val(CryptoJS.MD5(data['repo_id']));
+                    $('#repo_name').val(data['name']);
+                    $('#repo_description').val(data['description']);
+                    $('#repo_url').val(data['url']);
+                    $('#addRepoModal').modal('show');
+                });
+            });
+        </script>
 
 	</body>
 </html>
