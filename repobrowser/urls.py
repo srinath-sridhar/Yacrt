@@ -8,5 +8,6 @@ urlpatterns = patterns('',
                        url(r'^revisions/changes/$', views.get_revision_changes, name="repos_revisions_changes"),
                         url(r'^save/$', views.save, name="repos_save"),
                         url(r'^delete/$', views.delete_repository, name="repos_delete"),
-                        url(r'^edit/$', views.edit_repository, name="repos_edit")
+                        url(r'^edit/$', views.edit_repository, name="repos_edit"),
+                       url(r'^save/$', views.save, name="repos_save")
                        )

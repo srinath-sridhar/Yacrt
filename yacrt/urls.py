@@ -19,6 +19,7 @@ urlpatterns = patterns('',
     url(r'^$',views.signin_form),
     url(r'^registration/', include('registration.urls')),
     url(r'^repos/', include('repobrowser.urls')),
+    url(r'^comments/', include('commentmgr.urls')),
     url(r'^admin/', include(admin.site.urls)),
 )
 
