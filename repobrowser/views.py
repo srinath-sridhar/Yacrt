@@ -2,6 +2,7 @@ from django.template import RequestContext
 from django.core.urlresolvers import reverse
 from django.shortcuts import redirect, render
 from django.utils.html import strip_tags
+from django.utils import simplejson
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import Group, User, Permission
 from django.contrib.contenttypes.models import  ContentType
@@ -9,6 +10,7 @@ from django.http import HttpResponseRedirect, HttpResponse
 from repobrowser.models import Repository
 from svnclient import svncommands
 from svnclient import exceptions
+import hashlib
 
 
 INVALID_FILES = {
@@ -32,10 +34,10 @@ def construct_abs_path(repo_path, relative_path):
     """
 @login_required(login_url='/registration/signin/')
 def repos_home(request):
-    user_name = get_user_name(request)
+    user = get_user_data(request)
     repos = get_repos(request.user)
     messages = __get_messages(request)
-    return render(request, "repobrowser/repos_home.html", {'username':user_name, 'repos':repos, 'messages': messages})
+    return render(request, "repobrowser/repos_home.html", {'username': user, 'repos':repos, 'messages': messages})
 
 # will retrieve all messages related to any previous actions and clear the session variable
 def __get_messages(request):
@@ -47,6 +49,10 @@ def __get_messages(request):
 def get_repos(user):
     repos = Repository.objects.filter(repo_access_group__in=user.groups.all()) 
     return repos
+
+def get_user_data(request):
+    userList = User.objects.get(username=request.session.get('username'))
+    return userList
 
 # gets user name form session variable and escapes html tags
 def get_user_name(request):
@@ -110,6 +116,7 @@ def get_revision_changes(request):
                 'changed_paths':changed_paths,
                 'repo_id':repo_id})
 
+@login_required(login_url='/registration/signin/')
 def save(request):
     print "Called save!"
     user = User.objects.get(username=request.session['username'])
@@ -122,26 +129,81 @@ def save(request):
         }
     else:
         print "Creating objects"
-        new_repo = Repository.objects.create(repo_access_group_id=group[0].pk, repo_created_by=user)
-        new_repo.repo_name = request.POST['repo_name']
-        new_repo.repo_description = request.POST['repo_descrip']
-        new_repo.repo_url = request.POST['repo_url']
-        # Create Group Permissions
-        repository_content_type = ContentType.objects.get(app_label='repobrowser', model='Repository')
-        delete_permission = Permission.objects.get(codename='delete_repository',
-                                       name='Can delete repository',
-                                       content_type=repository_content_type)
-        change_permission = Permission.objects.get(codename='change_repository',
-                                                      name='Can change repository',
-                                                      content_type=repository_content_type)
-        user.user_permissions.add(change_permission, delete_permission)
-        user.save()
-        new_repo.save()
-        request.session['messages']  = {
-            'success' : "Repository has been successfully added."
-        }
+        repo_name = request.POST['repo_name']
+        repo_description = request.POST['repo_descrip']
+        repo_url = request.POST['repo_url']
+        repo_id_hash = request.POST['repo_identifier']
+        if repo_id_hash != " ":
+            repoList = Repository.objects.filter(repo_created_by_id=user.pk)
+            for repo in repoList:
+                if hashlib.md5(str(repo.pk)).hexdigest() == repo_id_hash:
+                    print "Found one!"
+                    repo.repo_name = repo_name
+                    repo.repo_description = repo_description
+                    repo_url = repo_url
+                    repo.save()
+            request.session['messages']  = {
+                'success' : "Repository has been edited successfully."
+            }
+        else:
+            new_repo = Repository.objects.create(repo_access_group_id=group[0].pk, repo_created_by=user)
+            new_repo.repo_name = repo_name
+            new_repo.repo_description = repo_description
+            new_repo.repo_url = repo_url
+            # Create Group Permissions
+            repository_content_type = ContentType.objects.get(app_label='repobrowser', model='Repository')
+            delete_permission = Permission.objects.get(codename='delete_repository',
+                                           name='Can delete repository',
+                                           content_type=repository_content_type)
+            change_permission = Permission.objects.get(codename='change_repository',
+                                                          name='Can change repository',
+                                                          content_type=repository_content_type)
+            user.user_permissions.add(change_permission, delete_permission)
+            user.save()
+            new_repo.save()
+            request.session['messages']  = {
+                'success' : "Repository has been added successfully."
+            }
     return redirect('/repos/home/')
 
+@login_required(login_url='/registration/signin/')
+def delete_repository(request):
+    user = User.objects.get(username=request.GET['user'])
+    repo = Repository.objects.get(pk=request.GET['repo'])
+    if user and repo:
+        if user.id == repo.repo_created_by_id and user.has_perm('repobrowser.delete_repository'):
+            repo.delete()
+            request.session['messages'] = {
+                'success' : 'Repository deleted successfully.'
+            }
+            return redirect('/repos/home/')
+    request.session['messages'] = {
+        'error' : 'Oops! Something went wrong. Either you are not authorized to make this change or the repository no longer exists!'
+    }
+    return redirect('/repos/home/')
+
+@login_required(login_url='/registration/signin/')
+def edit_repository(request):
+    print "calling edit"
+    print request.POST['username']
+    user = User.objects.get(username=request.POST['username'])
+    repo = Repository.objects.get(pk=request.POST['repo_id'])
+    if user and repo:
+        if user.id == repo.repo_created_by_id and user.has_perm('repobrowser.change_repository'):
+            repo_id = str(repo.pk)
+            url = repo.repo_url
+            print url
+            name = repo.repo_name
+            description = repo.repo_description
+            repo_data = {
+                'repo_id' : repo_id,
+                'url' : url,
+                'name' : name,
+                'description' : description
+            }
+            print "Returning"
+            return HttpResponse(simplejson.dumps(repo_data), content_type='application/json')
+    return
 
 
 def __isAValidFile(relative_file_path):
