@@ -2,7 +2,8 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import User, Group, Permission
+from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse
 from django.shortcuts import redirect, render
 from django.utils.html import strip_tags
@@ -22,6 +23,7 @@ def authenticate_user(request):
             login(request, user)
             request.session['username'] = username
             request.session['messages']= {}
+            print user.has_perm('auth.change_group')
             return redirect('/repos/home/')
         else:
             return render(request, 'registration/signin_form.html', {'error_message': "User account disabled",})
@@ -49,5 +51,10 @@ def save_user(request):
     group = Group.objects.create(name=group_name)
     group.save()
     new_user.groups.add(group)
+    content_type = ContentType.objects.get(app_label='auth', model='Group')
+    permission = Permission.objects.get(codename='change_group',
+                                           name='Can change group',
+                                           content_type=content_type)
+    new_user.user_permissions.add(permission)
     new_user.save()
     return HttpResponseRedirect('/')
