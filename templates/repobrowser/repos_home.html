@@ -89,9 +89,11 @@
                             {% if repo.repo_created_by_id == user.pk %}
                                 <a class="editRepo" id="editRepo_{{ forloop.counter }}" href="/repos/edit/" data-toggle="tooltip" title="Click to edit this repository." >
                                 <input type="hidden" id="repo_edit_id__{{ forloop.counter }}" value="{{ repo.id }}"> <input type="hidden" id="user_edit_name__{{ forloop.counter }}" value="{{ user }}">
-                                    <i class="icon-pencil"></i></a> &nbsp;
+                                    <i class="icon-edit"></i></a> &nbsp;
                                 <a href="/repos/delete/?repo={{ repo.id }}&user={{ user }}"  data-toggle="tooltip" title="Click to delete this repository.">
-                                    <i class="icon-remove"></i></a>
+                                    <i class="icon-trash"></i></a> &nbsp;
+                                <a href=""  data-toggle="tooltip" title="Add users to this Repository group.">
+                                    <i class="icon-user"></i></a>
                             {% else %}
                                 No actions available.
                             {% endif %}
