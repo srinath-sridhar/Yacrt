@@ -6,7 +6,7 @@ import sys
 
 #Set site root so that we can use relative paths instead of absoulte paths
 SITE_ROOT = os.path.dirname(os.path.realpath(__file__))
-PROJ_ROOT = os.path.abspath(os.path.join(SITE_ROOT, os.pardir)) 
+PROJ_ROOT = os.path.abspath(os.path.join(SITE_ROOT, os.pardir))
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
@@ -19,7 +19,7 @@ MANAGERS = ADMINS
 
 # If running tests use sqlite3 this makes tests run faster
 TEST = 'test' in sys.argv
- 
+
 if TEST:
     # in-memory SQLite used for testing
     DATABASES = {
@@ -29,7 +29,7 @@ if TEST:
                 }
             }
 else:
-    # normal operation use MySql database 
+    # normal operation use MySql database
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.mysql', # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
@@ -141,6 +141,7 @@ INSTALLED_APPS = (
     # Uncomment the next line to enable the admin:
     'django.contrib.admin',
     'registration',
+    'repobrowser',
     'commentmgr',
     # Uncomment the next line to enable admin documentation:
     # 'django.contrib.admindocs',
