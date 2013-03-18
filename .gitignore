@@ -4,3 +4,4 @@
 yarct/settings.py
 .*DS_Store
 .idea*
+static/*

@@ -1,4 +1,4 @@
-# Unified Diff 
+# Unified Diff
 import sys
 import os
 import difflib
@@ -53,7 +53,6 @@ def __reset_line_numbers(i):
         old_file_line_num = o
         new_file_line_num = n
 
-    print "reset line numbers"
 
 def __addCSS(output):
     output.append("<head><link rel='stylesheet' type='text/css' href='../diffEngine/unifieddiff_style.css'></head>")
@@ -70,7 +69,7 @@ def __writeAddedLine(output, line):
     global new_file_line_num
     output.append("<tr onclick='diff_line_clicked_action(this,"+str(new_file_line_num)+")'><td class='line-number'></td><td class='line-number'>"+str(new_file_line_num)+"</td><td><pre class=' diff-table-pre added-line'>" + __htmlFormatString(line) + "</pre></td></tr>")
     new_file_line_num +=1
-    
+
 def __writeLine(output, line):
     global old_file_line_num
     global new_file_line_num
@@ -91,10 +90,10 @@ def getUnifiedDiff(fileContentBefore, fileContentAfter):
     new_file_line_num = 1
     if fileContentBefore == None:
         fileContentBefore = ""
-    output = [] 
+    output = []
 #    __openTable(output)
     __createHTMLViewFromUnifiedDiff(output, difflib.unified_diff(fileContentBefore, fileContentAfter))
-#    __closeTable(output) 
+#    __closeTable(output)
     return output
 
 

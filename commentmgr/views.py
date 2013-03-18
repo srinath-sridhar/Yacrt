@@ -80,11 +80,11 @@ def create_new_comment(user_id, repository_id, revision_number, path, line, comm
                                     file_path=path,
                                     line_number=line,
                                     content=comment,
-                                    timestamp=now)    
+                                    timestamp=now)
         comment.save()
-        return (comment.id, now) 
+        return (comment.id, now)
 
-    except:    
+    except:
         return None
 
 """
@@ -120,6 +120,23 @@ def destroy_comment(comment):
         return 0
     except:
         return 1
+
+"""
+    gets all comments from database
+    params:
+        repo_id - id of the repository
+        revision_number - particular revision of the given repository
+        file_path - file within the repository
+"""
+def get_all_comments(repository_id, revision_number, file):
+    try:
+        comments = Comments.objects.filter(
+                                repo_id = repository_id,
+                                repo_revision = revision_number,
+                                file_path = file)
+        return comments
+    except:
+        return None
 
 """
     Create a new comment and saves it in the database
@@ -256,4 +273,37 @@ def destroy(request):
         data['error_code'] = 1
         data['error_msg'] = "User does not have accesss to the repository"
 
+    return HttpResponse(simplejson.dumps(data), mimetype='application/json')
+
+"""
+    get all the comments for a given version of a
+    particular file in a repository
+
+    params for HTTP request
+            repo_id = id of the repository
+            revision_number = repo revision number
+            file_path = path to the file
+            user_id  = from session
+"""
+@login_required(login_url='registration/signin/')
+def all(request):
+    data = {}
+    user_id = request.session['user_id']
+    repo_id = request.GET['repo_id']
+    #check if user has access to repo
+    if can_user_access_repo(user_id, repo_id) is True:
+        file_path = request.GET['file_path']
+        revision_number = request.GET['revision_number']
+        comments = get_all_comments(repo_id, revision_number, file_path)
+        if comments != None:
+            data['error_code'] = 0
+            data['error_msg'] = "Comments retrieved successfully"
+            data['comments'] = comments
+        else:
+            data['error_code'] = 2
+            data['error_msg'] = "Oops something went wrong! unable to retrieve comments, try again"
+
+    else:
+        data['error_code'] = 1
+        data['error_msg'] = "User does not have accesss to the repository"
     return HttpResponse(simplejson.dumps(data), mimetype='application/json')
