@@ -47,7 +47,7 @@ def __get_messages(request):
 
 # retireves all repos the user has access to
 def get_repos(user):
-    repos = Repository.objects.filter(repo_access_group__in=user.groups.all()) 
+    repos = Repository.objects.filter(repo_access_group__in=user.groups.all())
     return repos
 
 def get_user_data(request):
@@ -65,7 +65,7 @@ def get_user_name(request):
  Http GET parms repo_url  = Absolute URL for the repository,
                 repo_name = Name of the repository displayed on the page
                 repo_url  = absolute url of the repository
-    """    
+    """
 @login_required(login_url='/registration/signin/')
 def get_repo_revisions(request):
     user_name = get_user_name(request)

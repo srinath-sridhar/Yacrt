@@ -1,7 +1,7 @@
 *.pyc
 *.project
 *.pydevproject
-yarct/settings.py
+yacrt/settings.py
 .*DS_Store
 .idea*
 static/*

@@ -9,7 +9,7 @@ from django.shortcuts import redirect, render
 from django.utils.html import strip_tags
 from django.contrib.auth.decorators import login_required
 
-#Displays the login form 
+#Displays the login form
 def signin_form(request):
     return render_to_response('registration/signin_form.html', context_instance=RequestContext(request));
 
@@ -22,6 +22,7 @@ def authenticate_user(request):
         if user.is_active:
             login(request, user)
             request.session['username'] = username
+            request.session['user_id'] = user.id
             request.session['messages']= {}
             print user.has_perm('auth.change_group')
             return redirect('/repos/home/')

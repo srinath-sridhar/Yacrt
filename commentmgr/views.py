@@ -5,6 +5,8 @@ from repobrowser.models import Repository
 from django.contrib.auth.decorators import login_required
 from django.utils import simplejson
 from datetime import datetime
+from commentmgr.models import Comment
+import sys
 
 """
     checks if user has access to repo_id
@@ -74,18 +76,17 @@ def create_new_comment(user_id, repository_id, revision_number, path, line, comm
     try:
         now = datetime.now()
         comment = Comment.objects.create(
-                                    user=user_id,
-                                    repo_id=repository_id,
-                                    repo_revision=revision_number,
-                                    file_path=path,
-                                    line_number=line,
-                                    content=comment,
-                                    timestamp=now)
-        comment.save()
+                        user_id=user_id,
+                        repo_id=repository_id,
+                        repo_revision=revision_number,
+                        file_path=path,
+                        line_number=line,
+                        content=comment,
+                        timestamp=now)
         return (comment.id, now)
-
     except:
-        return None
+        print sys.exc_info()
+        return (None, None)
 
 """
     updates the comment content and timestamp
@@ -163,17 +164,17 @@ def create(request):
         #Get params from get request
         revision_number = request.GET['revision_number']
         file_path = request.GET['file_path']
-        line_number = reques.GET['line_number']
+        line_number = request.GET['line_number']
         content = request.GET['content']
 
         #create comment
         (comment_id, ts) = create_new_comment(user_id, repo_id, revision_number, file_path, line_number, content)
-        if comment_id is None:
+        if comment_id != None:
             author = request.session['username']
             data['error_code'] = 0
             data['error_msg'] = "Comment created successfully"
             data['author'] = author
-            data['timestamp'] = ts
+            data['timestamp'] = str(ts)
             data['comment_id'] = comment_id
         else:
             data['error_code'] = 2
