@@ -37,7 +37,8 @@ def can_user_access_repo(user_id, repo_id):
                 print "error retriving user / group data"
                 return False
     except:
-        print "rerror retriving repo data"
+        print sys.exc_info()
+        print "error retriving repo data"
         return False
 
 """
@@ -57,6 +58,7 @@ def can_user_change_comment(user_id, comment_id):
         else:
             return comment[0]
     except:
+        print sys.exc_info()
         return None
 
 """

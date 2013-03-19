@@ -54,12 +54,19 @@
                 {%endfor%}
                 </div>
 
+                <!-- Template for comment new and edit forms-->
                 <div id="comment-form" style="display:none;">
                     <textarea id="comment-content" rows="3" style="width: 100%" placeholder="Leave a comment for this line"></textarea>
                     <input type="button" class="btn" id="comment-action-button" value=""
                     onclick="comment_form_action(this)"/>
                     <input type="button" class="btn" id="comment-close-button" value="Close Form"
                     onclick="comment_close_action(this)"/>
+                </div>
+                <!-- Template for comment-->
+                <div id="comment-template" style="display:none;">
+                    <div class="comment-author-timestamp"><i class="icon-remove" onclick=remove_comment(this)></i></div>
+
+                    <div class="comment-content"></div>
                 </div>
 
                 <script type="text/javascript" src="{{STATIC_URL}}common/js/jquery.js"></script>
@@ -70,7 +77,7 @@
                     tr = $(title_body).children()[0];
                     td = $(tr).children()[0];
                     b = $(td).children()[1];
-                    file_path = $.trim($(b).html());
+                    file_path = $.trim($(b).text());
                     return file_path;
                 }
 
@@ -93,14 +100,62 @@
                 function save_comment(comment_content, comments_row) {
                     params = get_comment_parameters(comments_row);
                     params['content'] = comment_content;
-                    $.get('/comments/create/', params, function(data) {
-                      console.log(data);
-                    });
+                    result = null
+                    $.ajax({
+                            url: '/comments/create/',
+                            type: 'get',
+                            data: params,
+                            async: false,
+                            success: function(data) {
+                                result = data;
+                            }
+                         });
+                    return result;
                 }
 
-                function render_comment_template(content, author) {
-                  var  comment= "<div class='comment'> <div class='comment-author-timestamp'>"+author+" commented at "+ Date().toLocaleString()+" </div><div class='comment-content'>"+content+"</div></div>";
-                  return comment;
+                function delete_comment(comment_id) {
+                    result = null;
+                    params = {};
+                    params['repo_id'] = {{repo_id}};
+                    params['comment_id'] = comment_id;
+                    $.ajax({
+                            url: '/comments/destroy/',
+                            type: 'get',
+                            data: params,
+                            async: false,
+                            success: function(data) {
+                                result = data;
+                            }
+                         });
+                    return result;
+                }
+
+                function remove_comment(delete_button) {
+                    comment = $(delete_button).parent().parent();
+                    comment_id = $(comment).attr('id');
+                    all_comments = $(comment).parent();
+                    result = delete_comment(comment_id);
+                    if(result['error_code'] ==0) {
+                        $(comment).remove();
+                        if($(all_comments).children().length <=0) {
+                            $(all_comments).hide();
+                            comments_row = $(all_comments).parent().parent();
+                            $(comments_row).hide();
+                        }
+                    }
+                }
+
+                function render_comment_template(content, author, comment_id, timestamp) {
+                    comment = $("#comment-template").clone();
+                    $(comment).attr('class',"comment");
+                    $(comment).attr('id',comment_id);
+                    comment_fields = $(comment).children();
+                    $(comment_fields[0]).html(author+" commented at "+timestamp + "   " + $(comment_fields[0]).html());
+                    $(comment_fields[1]).html(content);
+                    if(!$(comment).is(":visible")) {
+                        $(comment).attr('style',"display: block;");
+                    }
+                    return comment;
                 }
 
                 //handler invoked when Add Comment button is pressed
@@ -108,14 +163,15 @@
                     comment_text_box = $(comment_form).children()[0];
                     comment_content = $.trim(comment_text_box.value);
                     if(comment_content != "") {
-                        save_comment(comment_content, $(comment_form).parent().parent());
+                        result = save_comment(comment_content, $(comment_form).parent().parent());
                         all_comments = $(comment_form).prev();
-                        $(all_comments).append(render_comment_template(comment_content, "Author"));
-                        if(!($(all_comments).is(":visible"))) {
-                            $(all_comments).show();
+                        if(result['comment_id'] >= 0) {
+                            $(all_comments).append(render_comment_template(comment_content, result['author'] , result['comment_id'], result['timestamp']));
+                            if(!($(all_comments).is(":visible"))) {
+                                $(all_comments).show();
+                            }
                         }
                     }
-
                 }
 
                 function show_new_comment_form(form_button) {
