@@ -28,7 +28,7 @@
 
 .diff-table {
 	width:100%;
-    font-family:Consolas,"Liberation Mono", Courier, monospace; 
+    font-family:Consolas,"Liberation Mono", Courier, monospace;
     font-size:12px;
     border:2px dashed #a1a1a1;
     border-radius:25px;
@@ -52,7 +52,7 @@
 	border-bottom:0px;
 	border-collapse: collapse;
 	border-radius:0;
-	font-family:Consolas,"Liberation Mono", Courier, monospace; 
+	font-family:Consolas,"Liberation Mono", Courier, monospace;
     font-size:12px;
     width:100%;
 }
@@ -81,9 +81,9 @@
 	margin-top:1%;
 }
 #comment-close-button {
-    margin-left:80%;
+    margin-right:10%;
 }
-#comment-form {
+.comment-form {
     margin-top: 1%;
     margin-bottom: 1%;
     margin-left:5%;
@@ -102,7 +102,7 @@
 
 .auto-hide-scroll {
     background-color:rgb(250, 250, 250);
-    width:1000px;
+    width:100%;
     overflow: hidden;
 }
 

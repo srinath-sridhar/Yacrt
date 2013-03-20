@@ -35,12 +35,12 @@
                                             <!-- div tag which holds the actual comments -->
                                             <div id="all-comments" style="display: none"></div>
                                             <!-- new comment form -->
-                                            <div id="comment-form">
+                                            <div class="comment-form">
                                                 <textarea id="comment-content" rows="3" style="width: 100%" placeholder="Leave a comment for this line"></textarea>
                                                 <input type="button" class="btn" id="comment-action-button" value="Add Comment"
                                                 onclick="comment_form_action(this)"/>
                                                 <input type="button" class="btn" id="comment-close-button" value="Close Form"
-                                                onclick="comment_close_action(this)"/>
+                                                onclick="comment_form_close_action(this)"/>
                                             </div>
                                         </td>
                                     </tr>
@@ -55,17 +55,17 @@
                 </div>
 
                 <!-- Template for comment new and edit forms-->
-                <div id="comment-form" style="display:none;">
+                <div id="comment-form-template" style="display:none;">
                     <textarea id="comment-content" rows="3" style="width: 100%" placeholder="Leave a comment for this line"></textarea>
                     <input type="button" class="btn" id="comment-action-button" value=""
                     onclick="comment_form_action(this)"/>
                     <input type="button" class="btn" id="comment-close-button" value="Close Form"
-                    onclick="comment_close_action(this)"/>
+                    onclick="comment_form_close_action(this)"/>
                 </div>
                 <!-- Template for comment-->
                 <div id="comment-template" style="display:none;">
-                    <div class="comment-author-timestamp"><i class="icon-remove" onclick=remove_comment(this)></i></div>
-
+                    <div class="comment-author-timestamp">&nbsp; &nbsp;<i class="icon-remove" onclick=remove_comment_action(this)></i>&nbsp; &nbsp;<i class="icon-edit"
+                         onclick=change_comment_action(this)></i></div>
                     <div class="comment-content"></div>
                 </div>
 
@@ -130,7 +130,34 @@
                     return result;
                 }
 
-                function remove_comment(delete_button) {
+                function edit_comment(comment_id, new_content) {
+                    result = null;
+                    params = {};
+                    params['repo_id'] = {{repo_id}};
+                    params['comment_id'] = comment_id;
+                    params['new_content'] = new_content;
+                    $.ajax({
+                            url: '/comments/edit/',
+                            type: 'get',
+                            data: params,
+                            async: false,
+                            success: function(data) {
+                                result = data;
+                            }
+                         });
+                    return result;
+                }
+
+                function change_comment_action(edit_button) {
+                    comment = $(edit_button).parent().parent();
+                    comment_content_div = $(comment).children()[1];
+                    comment_content = $(comment_content_div).text();
+                    comment_id = $(comment).attr('id');
+                    $(comment).after(render_comment_form(comment_id, "Update Comment", comment_content));
+                    $(comment).hide();
+                }
+
+                function remove_comment_action(delete_button) {
                     comment = $(delete_button).parent().parent();
                     comment_id = $(comment).attr('id');
                     all_comments = $(comment).parent();
@@ -145,17 +172,43 @@
                     }
                 }
 
-                function render_comment_template(content, author, comment_id, timestamp) {
+                function render_comment_form(comment_id, comment_action, comment_content) {
+                    comment_edit_form = $('#comment-form-template').clone();
+                    $(comment_edit_form).children()[0].value = comment_content;
+                    $($(comment_edit_form).children()[1]).attr('value', comment_action);
+                    $(comment_edit_form).show();
+                    $(comment_edit_form).attr('class', 'comment-form');
+                    $(comment_edit_form).attr('id', comment_id);
+                    return comment_edit_form;
+                }
+                function render_comment_template(content, author, comment_id, timestamp, action) {
                     comment = $("#comment-template").clone();
                     $(comment).attr('class',"comment");
                     $(comment).attr('id',comment_id);
                     comment_fields = $(comment).children();
-                    $(comment_fields[0]).html(author+" commented at "+timestamp + "   " + $(comment_fields[0]).html());
+                    //$(comment_fields[0]).html(author+" commented at "+timestamp + "   " + $(comment_fields[0]).html());
+                    $(comment_fields[0]).prepend(author+(action=="new" ? " commented at ":" updated at ")+timestamp);
                     $(comment_fields[1]).html(content);
                     if(!$(comment).is(":visible")) {
                         $(comment).attr('style',"display: block;");
                     }
                     return comment;
+                }
+
+                function update_comment_author_timestamp(comment, author, content, new_timestamp, comment_id) {
+                    $(comment).after(render_comment_template(content, author, comment_id, new_timestamp, "update"));
+                    $(comment).remove();
+                }
+
+                function update_comment(comment_edit_form) {
+                    comment_id = $(comment_edit_form).attr('id');
+                    new_content = $.trim($(comment_edit_form).children()[0].value);
+                    result = edit_comment(comment_id, new_content);
+                    if(result['error_code'] == 0) {
+                        update_comment_author_timestamp($(comment_edit_form).prev(), result['author'], result['comment'], result['new_timestamp'], comment_id);
+                        $(comment_edit_form).prev().show();
+                        $(comment_edit_form).remove();
+                    }
                 }
 
                 //handler invoked when Add Comment button is pressed
@@ -166,7 +219,8 @@
                         result = save_comment(comment_content, $(comment_form).parent().parent());
                         all_comments = $(comment_form).prev();
                         if(result['comment_id'] >= 0) {
-                            $(all_comments).append(render_comment_template(comment_content, result['author'] , result['comment_id'], result['timestamp']));
+                            comment_text_box.value = "";
+                            $(all_comments).append(render_comment_template(comment_content, result['author'] , result['comment_id'], result['timestamp'], "new"));
                             if(!($(all_comments).is(":visible"))) {
                                 $(all_comments).show();
                             }
@@ -190,21 +244,29 @@
                         show_new_comment_form(form_button);
                     }
                     else if (button_label == "Update Comment") {
+                        update_comment($(form_button).parent());
                     }
                 }
 
                 //Close Form button functionality
-                function comment_close_action(close_button) {
-                    all_comments = $(close_button).parent().prev();
-                    if (!($(all_comments).is(":visible"))) {
-                        $(all_comments).parent().parent().hide();
+                function comment_form_close_action(close_button) {
+                    button_label = $(close_button).prev().attr('value');
+                    if(button_label == "Add Comment") {
+                        all_comments = $(close_button).parent().prev();
+                        if (!($(all_comments).is(":visible"))) {
+                            $(all_comments).parent().parent().hide();
+                        }
+                        else {
+                            $(close_button).hide();
+                            input_button = $(close_button).prev();
+                            $(input_button).prop('value',"Add New Comment");
+                            comment_text_box = $(input_button).prev();
+                            $(comment_text_box).hide();
+                        }
                     }
-                    else {
-                        $(close_button).hide();
-                        input_button = $(close_button).prev();
-                        $(input_button).prop('value',"Add New Comment");
-                        comment_text_box = $(input_button).prev();
-                        $(comment_text_box).hide();
+                    else if(button_label =="Update Comment") {
+                        $(close_button).parent().prev().show();
+                        $(close_button).parent().remove();
                     }
                 }
 

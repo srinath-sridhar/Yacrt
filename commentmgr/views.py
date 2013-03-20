@@ -220,21 +220,22 @@ def edit(request):
             if new_timestamp != None:
                 data['error_code'] = 0
                 data['error_msg'] = "Comment updated successfully"
-                data['new_timestamp'] = new_timestamp
+                data['new_timestamp'] = str(new_timestamp)
+                data['author'] = request.session['username']
+                data['comment'] = new_content
 
             else:
                 data['error_code'] = 2
                 data['error_msg'] = "Oops something went wrong! unable to update comment, try again"
-                data['new_timestamp'] = ""
+
         else:
             data['error_code'] = 3
             data['error_msg'] = "User is not allowed to change comment"
-            data['new_timestamp'] = ""
 
     else:
         data['error_code'] = 1
         data['error_msg'] = "User does not have accesss to the repository"
-        data['new_timestamp'] = ""
+
 
     return HttpResponse(simplejson.dumps(data), mimetype='application/json')
 
