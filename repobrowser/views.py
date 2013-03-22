@@ -35,7 +35,8 @@ def repos_home(request):
     user = get_user_data(request)
     repos = get_repos(request.user)
     messages = __get_messages(request)
-    return render(request, "repobrowser/repos_home.html", {'username': user, 'repos':repos, 'messages': messages})
+    groups = Group.objects.filter(user=user)
+    return render(request, "repobrowser/repos_home.html", {'username': user, 'repos':repos, 'groups':groups , 'messages': messages})
 
 # will retrieve all messages related to any previous actions and clear the session variable
 def __get_messages(request):
@@ -114,35 +115,43 @@ def get_revision_changes(request):
                 'changed_paths':changed_paths,
                 'repo_id':repo_id})
 
+
+def editAndSaveRepo(repo_description, repo_id_hash, repo_name, repo_url, repo_group, request, user):
+    repoList = Repository.objects.filter(repo_created_by_id=user.pk)
+    for repo in repoList:
+        if hashlib.md5(str(repo.pk)).hexdigest() == repo_id_hash:
+            print "Found one!"
+            repo.repo_name = repo_name
+            repo.repo_description = repo_description
+            repo.repo_url = repo_url
+            repo.repo_access_group_id = repo_group.pk
+            repo.save()
+    request.session['messages'] = {
+        'success': "Repository has been edited successfully."
+    }
+
+
 @login_required(login_url='/registration/signin/')
 def save(request):
     print "Called save!"
     user = User.objects.get(username=request.session['username'])
     print user.username
-    group = Group.objects.filter(user__username__exact=request.session['username'], name__exact=(request.session['username']+"'s group"))
+    print request.POST['repo_group']
+    group = Group.objects.filter(user__username__exact=request.session['username'], name__exact=(request.POST['repo_group']))
     if len(group) == 0:
         print "setting errors"
         request.session['messages'] = {
-            'error' : "Oops! You can't add a repository as this time since you are a user from the previous release. Please contact Admin to adapt you to this version."
+            'error' : "Cannot find any group with that name!"
         }
     else:
         print "Creating objects"
         repo_name = request.POST['repo_name']
         repo_description = request.POST['repo_descrip']
         repo_url = request.POST['repo_url']
+        repo_group = Group.objects.get(name=request.POST['repo_group'])
         repo_id_hash = request.POST['repo_identifier']
         if repo_id_hash != " ":
-            repoList = Repository.objects.filter(repo_created_by_id=user.pk)
-            for repo in repoList:
-                if hashlib.md5(str(repo.pk)).hexdigest() == repo_id_hash:
-                    print "Found one!"
-                    repo.repo_name = repo_name
-                    repo.repo_description = repo_description
-                    repo_url = repo_url
-                    repo.save()
-            request.session['messages']  = {
-                'success' : "Repository has been edited successfully."
-            }
+            editAndSaveRepo(repo_description, repo_id_hash, repo_name, repo_url, repo_group, request, user)
         else:
             new_repo = Repository.objects.create(repo_access_group_id=group[0].pk, repo_created_by=user)
             new_repo.repo_name = repo_name
@@ -202,6 +211,12 @@ def edit_repository(request):
             print "Returning"
             return HttpResponse(simplejson.dumps(repo_data), content_type='application/json')
     return
+
+@login_required(login_url='/registration/signin/')
+def addNewGroup(request):
+    print "Called Add Group"
+    return
+
 
 
 def __isAValidFile(relative_file_path):

@@ -13,6 +13,34 @@
 
     </script>
 	<body>
+        <div id="addGroupModal" class="modal hide fade" tabindex="-5" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+            <form id="group_form" action='/repos/group/new/' method='POST'> {% csrf_token %}
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                    <h3 id="addGroupModalHeader">Add a new Repository</h3>
+                </div>
+
+                <div class="modal-body">
+
+                    <table class='table table-bordered table-striped' id='addNewGroup'>
+
+                        <tr>
+                            <td>Name</td>
+                            <td><input id="group_name" name='group_name' type='text' placeholder="Group Name" required></td>
+                        </tr>
+                    </table>
+
+                </div>
+                <div class="modal-footer">
+                    <button class='btn'  data-dismiss="modal" aria-hidden="true" id="groupModalCancelButton">Cancel</button>
+                    <input type='reset' class='btn'>
+                    <input class="btn btn-primary" type="submit">
+                </div>
+            </form>
+        </div>
+
+
+
 
         <div id="addRepoModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
             <form id="repo_form" action='/repos/save/' method='POST'> {% csrf_token %}
@@ -27,22 +55,33 @@
 
                             <tr>
                                 <td>Name</td>
-                                <td><input id="repo_name" name='repo_name' type='text' placeholder="Repository Name" required></td>
+                                <td colspan="2"><input id="repo_name" name='repo_name' type='text' placeholder="Repository Name" required></td>
                             </tr>
                             <tr>
                                 <td>Description</td>
-                                <td><input id="repo_description" name='repo_descrip' type='text' placeholder="Description" required></td>
+                                <td colspan="2"><input id="repo_description" name='repo_descrip' type='text' placeholder="Description" required></td>
                             </tr>
                             <tr>
                                 <td>URL</td>
-                                <td><input id="repo_url" name='repo_url' type='text' pattern="^(svn|http):.*" placeholder="svn: or http:" required></td>
+                                <td colspan="2"><input id="repo_url" name='repo_url' type='text' pattern="^(svn|http):.*" placeholder="svn: or http:" required></td>
                             </tr>
-                            <tr><td><input type="hidden" name="repo_identifier" id="repo_identifier" value=" "></td></tr>
+                            <tr>
+                                <td>Group</td>
+                                <td><select id='repo_group' name="repo_group">
+                                    {% for g in groups %}
+                                        <option id="{{ g.pk }}">{{ g.name }}</option>
+                                    {% endfor %}
+                                </select></td>
+                                <td id="groupAddButtonRow">
+                                    <a href="#addGroupModal" id="addGroupButton">Add a Group</a>
+                                </td>
+                            </tr>
+                            <input type="hidden" name="repo_identifier" id="repo_identifier" value=" ">
                     </table>
 
             </div>
             <div class="modal-footer">
-                <button class='btn'  data-dismiss="modal" aria-hidden="true">Cancel</button>
+                <button class='btn'  data-dismiss="modal" aria-hidden="true" id="modalCancelButton">Cancel</button>
                 <input type='reset' class='btn'>
                 <input class="btn btn-primary" type="submit">
             </div>
@@ -65,7 +104,7 @@
                 {% endfor %}
             {% endif %}
                 <div class="alert alert-info" style="padding: 5px;">
-                    <a href="#addRepoModal" role="button" class="btn" data-toggle="modal">Add a Repository</a>
+                    <a href="#addRepoModal" role="button" class="btn"  id="addRepoButton" >Add a Repository</a>
                 </div>
             <table class="table table-bordered table-striped" id="repoTable">
             {% if repos|length != 0 %}
@@ -128,8 +167,27 @@
                     $('#repo_name').val(data['name']);
                     $('#repo_description').val(data['description']);
                     $('#repo_url').val(data['url']);
+                    $('#addRepoModalHeader').html("Edit Repository");
                     $('#addRepoModal').modal('show');
                 });
+            });
+
+            $('#addRepoButton').click(function(event){
+               event.preventDefault();
+               $('#addRepoModalHeader').html("Add a new Repository");
+                $('#addRepoModal').modal('show');
+            });
+
+            $('#addGroupButton').click(function(event){
+               event.preventDefault();
+                $('#addRepoModal').modal('hide');
+                $('#addGroupModal').modal('show');
+            });
+
+            $('#groupModalCancelButton').click(function(event){
+                event.preventDefault();
+                $('#addGroupModal').modal('hide');
+                $('#addRepoModal').modal('show');
             });
         </script>
 
