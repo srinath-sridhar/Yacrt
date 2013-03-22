@@ -9,5 +9,6 @@ urlpatterns = patterns('',
                         url(r'^save/$', views.save, name="repos_save"),
                         url(r'^delete/$', views.delete_repository, name="repos_delete"),
                         url(r'^edit/$', views.edit_repository, name="repos_edit"),
-                       url(r'^save/$', views.save, name="repos_save")
+                       url(r'^save/$', views.save, name="repos_save"),
+                        url(r'^group/new/$', views.addNewGroup, name="new_group"),
                        )
