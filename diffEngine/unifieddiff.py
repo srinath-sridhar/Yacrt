@@ -10,6 +10,19 @@ new_file_line_num = 1
 def __htmlFormatString(str):
     return str.replace('<', '&lt;').replace('>', '&gt;')
 
+def __createHTMLViewFromContextDiff(output, diff):
+    boundaryRecord = None
+    startsWithPlus = re.compile(r"^\+.*")
+    startsWithMinus = re.compile(r"^\-.*")
+
+    for i in diff:
+        if re.search(startsWithPlus, i) != None:
+            __writeAddedLine(output, i[1:])
+        elif re.search(startsWithMinus, i) != None:
+            __writeDeletedLine(output, i[1:])
+        else:
+            __writeLine(output, i[1:])
+
 def __createHTMLViewFromUnifiedDiff(output,diff):
     boundaryRecord = None
     startsWithPlus = re.compile(r"^\+.*")
@@ -96,6 +109,16 @@ def getUnifiedDiff(fileContentBefore, fileContentAfter):
 #    __closeTable(output)
     return output
 
+def getContextDiff(fileContentBefore, fileContentAfter):
+    global old_file_line_num
+    global new_file_line_num
+    old_file_line_num = 1
+    new_file_line_num = 1
+    if fileContentBefore == None:
+        fileContentBefore = ""
+    output = []
+    __createHTMLViewFromContextDiff(output, difflib.Differ().compare(fileContentBefore, fileContentAfter))
+    return output
 
 # Testing commands - Do not uncomment.
 

@@ -1,11 +1,11 @@
 # Common API for retrieving data from a version control system
 # Describes the functions required by the view
-# NOTE : This file has to be renamed since this should not be specfic to 
+# NOTE : This file has to be renamed since this should not be specfic to
 #        any particular version control system
 import sys
 sys.path.append('..')
 from pysclient import Pysclient
-from diffEngine.unifieddiff import getUnifiedDiff
+from diffEngine.unifieddiff import getUnifiedDiff, getContextDiff
 import pysvn
 
 """
@@ -34,7 +34,7 @@ def get_head_version_number(url):
         [start] - from and including start to the oldest revison
 
     Returns List of Pysrev instances
-"""                           
+"""
 def     get_revision_details(url, start_rev=None, end_rev=None, discover_changes=False):
     client = __create_client(url)
     return client.get_revisions(start_rev, end_rev, discover_changes)
@@ -51,8 +51,8 @@ def list(client, url):
  repository location.
  url - base path of the remote repository
  rev_number - revision number of repository
- 
- Returns - One Change instance 
+
+ Returns - One Change instance
 """
 
 def __repoHasChanges(changed_paths):
@@ -70,11 +70,11 @@ def get_all_changed_paths(url, rev_number=None):
 
 """
  Gets the unified diff of a file with its immediately previous version.
- Example file "a" of revision 1000 is compared 
+ Example file "a" of revision 1000 is compared
  against file "a" in revison 999
  url - base path of the remote repository
  rev_number - revision number of repository
-              if no revision number is specified 
+              if no revision number is specified
               use file from HEAD revision
  file_path  - relative ? path of file within the repository
 
@@ -89,14 +89,14 @@ def get_unified_html_diff(repo_url, file_path, rev_number = None):
 
 """
  Gets the side by side diff of a file with its immediately previous version.
- Example file "a" of revision 1000 is compared 
+ Example file "a" of revision 1000 is compared
  against file "a" in revison 999
  url - base path of the remote repository
  rev_number - revision number of repository
-              if no revision number is specified 
+              if no revision number is specified
               use file from HEAD revision
  file_path  - path of file within the repository
- 
+
 
  NOTE:  file_path and url may have an overlap. Make sure the overlap
         is resolved to get the url specific to the file
@@ -106,6 +106,11 @@ def get_unified_html_diff(repo_url, file_path, rev_number = None):
 def get_side_by_side_html_diff(url, rev_number, file_path):
     return []
 
+"""
+"""
+def get_context_html_diff(repo_url, file_path, rev_number = None):
+    client = __create_client(repo_url)
+    return getContextDiff(client.get_file_content_previous_change(file_path, rev_number), client.get_file_content_current_change(file_path, rev_number))
 
 """
 
