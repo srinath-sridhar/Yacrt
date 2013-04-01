@@ -1,3 +1,4 @@
+from django.core import serializers
 from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import redirect, render
 from django.contrib.auth.models import Group, User
@@ -74,7 +75,7 @@ def can_user_change_comment(user_id, comment_id):
             comment_id, timestamp - on successfully saving object to datebase
             None - if there is an error
 """
-def create_new_comment(user_id, repository_id, revision_number, path, line, comment):
+def create_new_comment(user_id, repository_id, revision_number, path, line, comment, author):
     try:
         now = datetime.now()
         comment = Comment.objects.create(
@@ -84,7 +85,8 @@ def create_new_comment(user_id, repository_id, revision_number, path, line, comm
                         file_path=path,
                         line_number=line,
                         content=comment,
-                        timestamp=now)
+                        timestamp=now,
+                        author = author)
         return (comment.id, now)
     except:
         print sys.exc_info()
@@ -131,14 +133,15 @@ def destroy_comment(comment):
         revision_number - particular revision of the given repository
         file_path - file within the repository
 """
-def get_all_comments(repository_id, revision_number, file):
+def get_all_comments(repository_id, revision_number, file_path):
     try:
-        comments = Comments.objects.filter(
+        comments = Comment.objects.filter(
                                 repo_id = repository_id,
                                 repo_revision = revision_number,
-                                file_path = file)
+                                file_path = file_path)
         return comments
     except:
+        print "exception  " + str(sys.exc_info())
         return None
 
 """
@@ -170,7 +173,7 @@ def create(request):
         content = request.GET['content']
 
         #create comment
-        (comment_id, ts) = create_new_comment(user_id, repo_id, revision_number, file_path, line_number, content)
+        (comment_id, ts) = create_new_comment(user_id, repo_id, revision_number, file_path, line_number, content, request.session['username'])
         if comment_id != None:
             author = request.session['username']
             data['error_code'] = 0
@@ -310,4 +313,24 @@ def all(request):
     else:
         data['error_code'] = 1
         data['error_msg'] = "User does not have accesss to the repository"
+    comments = __filter_comment_data(comments)
+    data['comments'] = comments
     return HttpResponse(simplejson.dumps(data), mimetype='application/json')
+
+
+"""
+    Creates an array of comment objects from result set of query
+    Place to put formatting if required
+"""
+def __filter_comment_data(all_comments):
+    comments = []
+
+    for c in all_comments:
+        comment = {}
+        comment['id'] = c.id;
+        comment['author'] = c.author
+        comment['content'] = c.content
+        comment['timestamp'] = str(c.timestamp)
+        comment['line_number'] = str(c.line_number)
+        comments.append(comment)
+    return comments

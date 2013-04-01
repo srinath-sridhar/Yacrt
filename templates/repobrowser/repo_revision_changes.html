@@ -11,13 +11,13 @@
                          <br>
                          <a href="/registration/signout/">Logout</a>
                     </div>
-                    <div style="width: 100%; height: 100%; margin-top: 30px;">
+                    <div id="diff-page-root" style="width: 100%; height: 100%; margin-top: 30px;">
                         <h2>Changes for revision {{rev_number}} of {{repo_name}}</h2>
                         {%for p in changed_paths%}
                         <div class="tabbable">
                         <ul class="nav nav-tabs">
                             <li class="active">
-                                <a href="#unifieddifftab-{{forloop.counter}}" data-toggle="tab">Unified Diff</a>
+                                <a href="#unifieddifftab-{{forloop.counter}}" data-toggle="tab">Unified Diff a.k.a (less work)</a>
                             </li>
                             <li>
                                 <a href="#fullfiledifftab-{{forloop.counter}}" data-toggle="tab">View full file with changes</a>
@@ -32,7 +32,7 @@
                                 <colgroup width="96%"></colgroup>
                                 <tbody>
                                     <tr>
-                                        <td class="change-title" colspan=3 style="font-size:20px"><b class="{{p.change.get_action_on_file}}">{{p.change.get_action_on_file}}</b><b>&nbsp;&nbsp;{{p.change.get_relative_path}}</b>&nbsp;&nbsp;<a href="javascript:void(0);" onclick=expand_view(this,"diff-view-{{forloop.counter}}")> <i class="icon-minus"></i> </a></td>
+                                        <td class="change-title" colspan=3 style="font-size:20px"><b class="{{p.change.get_action_on_file}}">{{p.change.get_action_on_file}}</b><b id="repo_file_path">&nbsp;&nbsp;{{p.change.get_relative_path}}</b>&nbsp;&nbsp;<i class="icon-minus" onclick=expand_content_view(this,"diff-view-{{forloop.counter}}")></i></td>
                                     </tr>
                                 </tbody>
                                 <tbody id="diff-view-{{forloop.counter}}">
@@ -49,7 +49,7 @@
                                                 <input type="button" class="btn" id="comment-action-button" value="Add Comment"
                                                 onclick="comment_form_action(this)"/>
                                                 <input type="button" class="btn" id="comment-close-button" value="Close Form"
-                                                onclick="comment_form_close_action(this)"/>
+                                                onclick="comment_form_action(this)"/>
                                             </div>
                                         </td>
                                     </tr>
@@ -65,12 +65,12 @@
                                 <colgroup width="2%"></colgroup>
                                 <colgroup width="2%"></colgroup>
                                 <colgroup width="96%"></colgroup>
-                                <tbody>
-                                    <tr>
-                                        <td class="change-title" colspan=3 style="font-size:20px"><b class="{{p.change.get_action_on_file}}">{{p.change.get_action_on_file}}</b><b>&nbsp;&nbsp;{{p.change.get_relative_path}}</b>&nbsp;&nbsp;<a href="javascript:void(0);" onclick=expand_view(this,"diff-view-{{forloop.counter}}")> <i class="icon-minus"></i> </a></td>
+                                <tbody id="diff-view-{{forloop.counter}}-header">
+                                    <tr >
+                                        <td class="change-title" colspan=3 style="font-size:20px"><b class="{{p.change.get_action_on_file}}">{{p.change.get_action_on_file}}</b><b id="repo_file_path">&nbsp;&nbsp;{{p.change.get_relative_path}}</b>&nbsp;&nbsp;<a href="javascript:void(0);" onclick=expand_content_view(this,"diff-view-{{forloop.counter}}-content")> <i class="icon-minus"></i> </a></td>
                                     </tr>
                                 </tbody>
-                                <tbody id="diff-view-{{forloop.counter}}">
+                                <tbody id="diff-view-{{forloop.counter}}-content">
                                     {%for line in p.context_diff%}
                                     {%autoescape off%} {{line}} {% endautoescape%}
                                     <tr id="comments-row" style="display: none">
@@ -84,7 +84,7 @@
                                                 <input type="button" class="btn" id="comment-action-button" value="Add Comment"
                                                 onclick="comment_form_action(this)"/>
                                                 <input type="button" class="btn" id="comment-close-button" value="Close Form"
-                                                onclick="comment_form_close_action(this)"/>
+                                                onclick="comment_form_action(this)"/>
                                             </div>
                                         </td>
                                     </tr>
@@ -105,7 +105,7 @@
                     <input type="button" class="btn" id="comment-action-button" value=""
                     onclick="comment_form_action(this)"/>
                     <input type="button" class="btn" id="comment-close-button" value="Close Form"
-                    onclick="comment_form_close_action(this)"/>
+                    onclick="comment_form_action(this)"/>
                 </div>
                 <!-- Template for comment-->
                 <div id="comment-template" style="display:none;">
@@ -117,38 +117,17 @@
                 <script type="text/javascript" src="{{STATIC_URL}}common/js/jquery.js"></script>
                 <script type="text/javascript" src="{{STATIC_URL}}common/js/bootstrap.js"></script>
                 <script type="text/javascript">
-
-                function get_file_path(diff_row) {
-                    title_body = $(diff_row).parent().prev();
-                    tr = $(title_body).children()[0];
-                    td = $(tr).children()[0];
-                    b = $(td).children()[1];
-                    file_path = $.trim($(b).text());
-                    return file_path;
-                }
-
-                function get_line_number(diff_row) {
-                    return $($(diff_row).children()[1]).html();
-                }
-                function get_comment_parameters(comments_row) {
-                    params = {}
-                    params['repo_id'] = {{repo_id}}
-                    params['revision_number'] = {{rev_number}}
-
-                    diff_row = $(comments_row).prev();
-
-                    params['file_path'] = get_file_path(diff_row);
-                    params['line_number'] = get_line_number(diff_row);
-
-                    return params;
-                }
-
+                /*
+                ================================================================
+                    AJAX Functions for save, edit, destroy and get_all
+                ================================================================
+                */
                 function save_comment(comment_content, comments_row) {
                     params = get_comment_parameters(comments_row);
                     params['content'] = comment_content;
                     result = null
                     $.ajax({
-                            url: '/comments/create/',
+                            url: '/comments/create',
                             type: 'get',
                             data: params,
                             async: false,
@@ -165,7 +144,7 @@
                     params['repo_id'] = {{repo_id}};
                     params['comment_id'] = comment_id;
                     $.ajax({
-                            url: '/comments/destroy/',
+                            url: '/comments/destroy',
                             type: 'get',
                             data: params,
                             async: false,
@@ -194,6 +173,62 @@
                     return result;
                 }
 
+                function get_all_comments_for(file_name) {
+                    params = {}
+                    result = null
+                    params['repo_id'] = {{repo_id}}
+                    params['revision_number'] = {{rev_number}}
+
+                    params['file_path'] = file_name;
+
+                    $.ajax({
+                            url: '/comments/all/',
+                            type: 'get',
+                            data: params,
+                            async: false,
+                            success: function(data) {
+                                result = data;
+                            }
+                    });
+                    return result;
+                }
+
+                /*
+                ================================================================
+                    Functions to scrape data required for AJAX calls from DOM
+                ================================================================
+                */
+                function get_file_path(diff_row) {
+                    title_body = $(diff_row).parent().prev();
+                    tr = $(title_body).children()[0];
+                    td = $(tr).children()[0];
+                    b = $(td).children()[1];
+                    file_path = $.trim($(b).text());
+                    return file_path;
+                }
+
+                function get_line_number(diff_row) {
+                    return $($(diff_row).children()[1]).html();
+                }
+                function get_comment_parameters(comments_row) {
+                    params = {}
+                    params['repo_id'] = {{repo_id}}
+                    params['revision_number'] = {{rev_number}}
+
+                    diff_row = $(comments_row).prev();
+
+                    params['file_path'] = get_file_path(diff_row);
+                    params['line_number'] = get_line_number(diff_row);
+
+                    return params;
+                }
+
+                /*
+                ======================================================================================
+                    Functions that respond to actions for comments when edit, delete buttons clicked
+                ======================================================================================
+                */
+
                 function change_comment_action(edit_button) {
                     comment = $(edit_button).parent().parent();
                     comment_content_div = $(comment).children()[1];
@@ -218,6 +253,11 @@
                     }
                 }
 
+                /*
+                ======================================================================================
+                    Function that renders new comment form
+                ======================================================================================
+                */
                 function render_comment_form(comment_id, comment_action, comment_content) {
                     comment_edit_form = $('#comment-form-template').clone();
                     $(comment_edit_form).children()[0].value = comment_content;
@@ -227,60 +267,14 @@
                     $(comment_edit_form).attr('id', comment_id);
                     return comment_edit_form;
                 }
-                function render_comment_template(content, author, comment_id, timestamp, action) {
-                    comment = $("#comment-template").clone();
-                    $(comment).attr('class',"comment");
-                    $(comment).attr('id',comment_id);
-                    comment_fields = $(comment).children();
-                    //$(comment_fields[0]).html(author+" commented at "+timestamp + "   " + $(comment_fields[0]).html());
-                    $(comment_fields[0]).prepend(author+(action=="new" ? " commented at ":" updated at ")+timestamp);
-                    $(comment_fields[1]).html(content);
-                    if(!$(comment).is(":visible")) {
-                        $(comment).attr('style',"display: block;");
-                    }
-                    return comment;
-                }
+                /*
+                ======================================================================================
+                    Handlers for buttons on comment form
+                ======================================================================================
+                */
 
-                function update_comment_author_timestamp(comment, author, content, new_timestamp, comment_id) {
-                    $(comment).after(render_comment_template(content, author, comment_id, new_timestamp, "update"));
-                    $(comment).remove();
-                }
-
-                function update_comment(comment_edit_form) {
-                    comment_id = $(comment_edit_form).attr('id');
-                    new_content = $.trim($(comment_edit_form).children()[0].value);
-                    result = edit_comment(comment_id, new_content);
-                    if(result['error_code'] == 0) {
-                        update_comment_author_timestamp($(comment_edit_form).prev(), result['author'], result['comment'], result['new_timestamp'], comment_id);
-                        $(comment_edit_form).prev().show();
-                        $(comment_edit_form).remove();
-                    }
-                }
-
-                //handler invoked when Add Comment button is pressed
-                function add_new_comment(comment_form) {
-                    comment_text_box = $(comment_form).children()[0];
-                    comment_content = $.trim(comment_text_box.value);
-                    if(comment_content != "") {
-                        result = save_comment(comment_content, $(comment_form).parent().parent());
-                        all_comments = $(comment_form).prev();
-                        if(result['comment_id'] >= 0) {
-                            comment_text_box.value = "";
-                            $(all_comments).append(render_comment_template(comment_content, result['author'] , result['comment_id'], result['timestamp'], "new"));
-                            if(!($(all_comments).is(":visible"))) {
-                                $(all_comments).show();
-                            }
-                        }
-                    }
-                }
-
-                function show_new_comment_form(form_button) {
-                    $(form_button).prop('value',"Add Comment");
-                    $(form_button).prev().show();
-                    $(form_button).next().show();
-                }
-
-                //handler invoked when comment form button is pressed
+                //Handler invoked when comment form button is pressed
+                //Delegates actual functionality
                 function comment_form_action(form_button) {
                     button_label = $(form_button).attr('value')
                     if(button_label == "Add Comment") {
@@ -292,10 +286,19 @@
                     else if (button_label == "Update Comment") {
                         update_comment($(form_button).parent());
                     }
+                    else if (button_label == "Close Form") {
+                        close_comment_form($(form_button));
+                    }
                 }
 
+                /*
+                ======================================================================================
+                    Delegates for comment form button actions
+                ======================================================================================
+                */
+
                 //Close Form button functionality
-                function comment_form_close_action(close_button) {
+                function close_comment_form(close_button) {
                     button_label = $(close_button).prev().attr('value');
                     if(button_label == "Add Comment") {
                         all_comments = $(close_button).parent().prev();
@@ -316,8 +319,66 @@
                     }
                 }
 
-                //handler invoked when diff output row is clicked
-                function diff_line_clicked_action(e, line_number) {
+                function add_new_comment(comment_form) {
+                    comment_text_box = $(comment_form).children()[0];
+                    comment_content = $.trim(comment_text_box.value);
+                    if(comment_content != "") {
+                        result = save_comment(comment_content, $(comment_form).parent().parent());
+                        all_comments = $(comment_form).prev();
+                        if(result['comment_id'] >= 0) {
+                            comment_text_box.value = "";
+                            $(all_comments).append(render_comment_template(comment_content, result['author'] , result['comment_id'], result['timestamp'], "new"));
+                            if(!($(all_comments).is(":visible"))) {
+                                $(all_comments).show();
+                            }
+                        }
+                    }
+                }
+
+                function update_comment(comment_form) {
+                    comment_id = $(comment_form).attr('id');
+                    new_content = $.trim($(comment_form).children()[0].value);
+                    result = edit_comment(comment_id, new_content);
+                    if(result['error_code'] == 0) {
+                        update_comment_author_timestamp($(comment_form).prev(), result['author'], result['comment'], result['new_timestamp'], comment_id);
+                        $(comment_form).prev().show();
+                        $(comment_form).remove();
+                    }
+                }
+
+                function show_new_comment_form(form_button) {
+                    $(form_button).prop('value',"Add Comment");
+                    $(form_button).prev().show();
+                    $(form_button).next().show();
+                }
+
+                /*
+                ======================================================================================
+                    Functions that Manipulate DOM to Insert new comment or update existing comment
+                ======================================================================================
+                */
+                function render_comment_template(content, author, comment_id, timestamp, action) {
+                    comment = $("#comment-template").clone();
+                    $(comment).attr('class',"comment");
+                    $(comment).attr('id',comment_id);
+                    comment_fields = $(comment).children();
+                    //$(comment_fields[0]).html(author+" commented at "+timestamp + "   " + $(comment_fields[0]).html());
+                    $(comment_fields[0]).prepend(author+(action=="new" ? " commented on ":" updated on ")+timestamp);
+                    $(comment_fields[1]).html(content);
+                    if(!$(comment).is(":visible")) {
+                        $(comment).attr('style',"display: block;");
+                    }
+                    return comment;
+                }
+
+                function update_comment_author_timestamp(comment, author, content, new_timestamp, comment_id) {
+                    $(comment).after(render_comment_template(content, author, comment_id, new_timestamp, "update"));
+                    $(comment).remove();
+                }
+
+
+                //Handler invoked when diff output row is clicked
+                function diff_line_clicked_action(e) {
                     comment_row = $(e).next('tr')
                     if(!($(comment_row).is(":visible"))) {
                         $(comment_row).show();
@@ -325,14 +386,67 @@
                 }
 
                 //Expand and collapse the diff output
-                function expand_view(src_elem, elem_id) {
-                    if ($(src_elem).children().attr('class') == "icon-plus") {
-                        $(src_elem).children().attr('class', 'icon-minus');
+                //Bug here
+                function expand_content_view(src_elem, elem_id) {
+                    if ($(src_elem).attr('class') == "icon-plus") {
+                        $(src_elem).attr('class', 'icon-minus');
                     } else {
-                        $(src_elem).children().attr('class', 'icon-plus');
+                        $(src_elem).attr('class', 'icon-plus');
                     }
                     $('#' + elem_id).slideToggle(100);
                 }
+
+                /*
+                ======================================================================================
+                    Functions that loads comments when page is loaded
+                ======================================================================================
+                */
+
+                function find_comment_parent_for(file_path, line_number) {
+                    if(filename_to_id[file_path] != null) {
+                        diff_view_id = '#diff-view-'+filename_to_id[file_path];
+                        diff_views = $(diff_view_id);
+                    }
+                    return;
+                }
+
+                function append_comments_for(file_path, comments) {
+                    console.log("appending comments for file:"+file_path);
+                    comment_elems = [];
+                    comments.forEach(function(comment) {
+                        comment_elems.push(
+                                            render_comment_template(
+                                                        comment['content'],
+                                                        comment['author'],
+                                                        comment['timestamp'],
+                                                        comment['id'])
+                                          );
+                    });
+                    comments.forEach(function(comment) {
+                        parent_elem = find_comment_parent_for(file_path, comment['line_number']);
+                    });
+                }
+
+                filename_to_id = {};
+                $(function() {
+                    comments = {}
+                    file_name_elems = [{%for p in changed_paths%} "{{p.change.get_relative_path}}", {%endfor%}""];
+                    file_name_elems.pop();
+                    console.log(file_name_elems);
+                    file_name_elems.forEach(function(item, counter) {
+                        filename_to_id[$.trim(item)] = counter;
+                    })
+                    console.log(filename_to_id);
+                    file_name_elems.forEach(function(file) {
+                        result = get_all_comments_for(file);
+                        if(result['error_code'] == 0) {
+                            comments[file] = result['comments'];
+                            append_comments_for(file, comments[file]);
+                        }
+                    })
+                })
+
+
                 </script>
             </body>
             </html>

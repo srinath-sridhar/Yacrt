@@ -11,3 +11,4 @@ class Comment(models.Model):
     line_number = models.IntegerField()
     content = models.TextField()
     timestamp = models.DateTimeField()
+    author = models.CharField(max_length=100)
