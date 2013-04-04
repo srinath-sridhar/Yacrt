@@ -30,12 +30,12 @@
                                 <colgroup width="2%"></colgroup>
                                 <colgroup width="2%"></colgroup>
                                 <colgroup width="96%"></colgroup>
-                                <tbody>
+                                <tbody id="diff-view-{{forloop.counter}}-header">
                                     <tr>
                                         <td class="change-title" colspan=3 style="font-size:20px"><b class="{{p.change.get_action_on_file}}">{{p.change.get_action_on_file}}</b><b id="repo_file_path">&nbsp;&nbsp;{{p.change.get_relative_path}}</b>&nbsp;&nbsp;<i class="icon-minus" onclick=expand_content_view(this,"diff-view-{{forloop.counter}}")></i></td>
                                     </tr>
                                 </tbody>
-                                <tbody id="diff-view-{{forloop.counter}}">
+                                <tbody id="diff-view-{{forloop.counter}}-content">
                                     {%for line in p.unified_diff%}
                                     {%autoescape off%} {{line}} {% endautoescape%}
                                     <tr id="comments-row" style="display: none">
@@ -402,51 +402,70 @@
                 ======================================================================================
                 */
 
-                function find_comment_parent_for(file_path, line_number) {
-                    if(filename_to_id[file_path] != null) {
-                        diff_view_id = '#diff-view-'+filename_to_id[file_path];
-                        diff_views = $(diff_view_id);
+                function get_comment_parent_elem(id, line_number) {
+                    unified_diff_el = $('#unifieddifftab-'+id);
+                    diff_view_el = $(unified_diff_el).find('#diff-view-'+id+'-content');
+                    rows = $(diff_view_el).children()
+                    for(i=0; i<rows.length;i++) {
+                        if(i%2==0) {
+                            if($($(rows[i]).children()[1]).html() == line_number) {
+                                return rows[i+1];
+                            }
+                        }
                     }
-                    return;
                 }
 
-                function append_comments_for(file_path, comments) {
+                function append_comment(id, comment) {
+                    comment_elem = render_comment_template(comment['content'],
+                                                           comment['author'],
+                                                           comment['id'],
+                                                           comment['timestamp'],
+                                                           "new");
+                    comment_parent_elem = get_comment_parent_elem(id, comment['line_number']);
+                    if(!$(comment_parent_elem).is(":visible")) {
+                        $(comment_parent_elem).show();
+                        comments_holder = $(comment_parent_elem).children()[1];
+                        comments_div = $(comments_holder).children()[0];
+                        $(comments_div).append(comment_elem);
+                        $(comments_div).show();
+                    }
+                }
+
+                function append_comments_for(file_path, id, comments) {
                     console.log("appending comments for file:"+file_path);
-                    comment_elems = [];
                     comments.forEach(function(comment) {
-                        comment_elems.push(
-                                            render_comment_template(
-                                                        comment['content'],
-                                                        comment['author'],
-                                                        comment['timestamp'],
-                                                        comment['id'])
-                                          );
-                    });
-                    comments.forEach(function(comment) {
-                        parent_elem = find_comment_parent_for(file_path, comment['line_number']);
+                        append_comment(id, comment);
                     });
                 }
 
-                filename_to_id = {};
+                id_to_filename = [];
+
+                function load_all_comments(comments) {
+                    console.log(comments);
+                    id_to_filename.forEach(function(file, id) {
+                        if(file!="") {
+                            append_comments_for(file, id, comments[file]);
+                        }
+                    });
+                }
+
                 $(function() {
-                    comments = {}
-                    file_name_elems = [{%for p in changed_paths%} "{{p.change.get_relative_path}}", {%endfor%}""];
-                    file_name_elems.pop();
+                    comments = []
+                    file_name_elems = ["",{%for p in changed_paths%} "{{p.change.get_relative_path}}",{%endfor%}];
                     console.log(file_name_elems);
                     file_name_elems.forEach(function(item, counter) {
-                        filename_to_id[$.trim(item)] = counter;
-                    })
-                    console.log(filename_to_id);
+                        id_to_filename[counter] = $.trim(item);
+                    });
+                    console.log(id_to_filename);
                     file_name_elems.forEach(function(file) {
                         result = get_all_comments_for(file);
                         if(result['error_code'] == 0) {
                             comments[file] = result['comments'];
-                            append_comments_for(file, comments[file]);
                         }
-                    })
+                    });
+                    load_all_comments(comments);
                 })
 
-
-                </script>
+            </script>
             </body>
             </html>
